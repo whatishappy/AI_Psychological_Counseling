@@ -10,6 +10,7 @@ import plansRouter from './routes/plans';
 import measurementsRouter from './routes/measurements';
 import assessmentsRouter from './routes/assessments';
 import adminRouter from './routes/admin';
+import path from 'path';
 
 const app = express();
 
@@ -17,6 +18,9 @@ const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(json({ limit: '1mb' }));
+
+// 静态文件服务
+app.use(express.static(path.join(__dirname, '..')));
 
 // 健康检查端点
 app.get('/health', (_req, res) => {
@@ -40,7 +44,7 @@ app.use((err: any, _req: any, res: any, _next: any) => {
     });
 });
 
-// 404处理
+// 404处理 - 必须放在静态文件服务和API路由之后
 app.use((_req, res) => {
     res.status(404).json({ error: 'Not found' });
 });

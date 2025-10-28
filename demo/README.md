@@ -18,10 +18,11 @@ DB_USER=root
 DB_PASSWORD=your-mysql-password
 DB_NAME=ai_psychology_platform
 
-# 可选：接入 MindChat AI
-MINDCHAT_API_BASE=https://api.modelscope.cn/v1
-MINDCHAT_API_KEY=your-mindchat-api-key
-MINDCHAT_MODEL=mindchat
+# 可选：接入 GLM AI
+GLM_API_BASE=https://open.bigmodel.cn/api/paas/v4
+GLM_API_KEY=your-glm-api-key
+GLM_MODEL=glm-4
+
 ```
 
 #### 3. 初始化数据库
@@ -431,7 +432,7 @@ src/
 
 ## 开发
 
-```bash
+```
 # 启动开发服务器
 npm run dev
 
@@ -447,7 +448,7 @@ npm start
 
 ## 代码质量
 
-```bash
+```
 # 运行代码检查
 npm run lint
 
@@ -508,7 +509,7 @@ npm run test:coverage
 
 使用Jest进行单元测试和集成测试。
 
-```bash
+```
 # 运行所有测试
 npm test
 
@@ -523,7 +524,7 @@ npm run test:coverage
 
 构建项目并运行生产服务器:
 
-```bash
+```
 npm run build
 npm start
 ```

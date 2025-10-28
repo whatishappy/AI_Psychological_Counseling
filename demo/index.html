@@ -346,7 +346,7 @@
                     <li><a href="#chat">聊天</a></li>
                     <li><a href="#testimonials">评价</a></li>
                 </ul>
-                <button class="cta-button">立即开始</button>
+                <button class="cta-button" onclick="document.getElementById('chat').scrollIntoView({ behavior: 'smooth' });">立即开始</button>
             </nav>
         </div>
     </header>
@@ -357,7 +357,7 @@
             <h1>您的专属AI心理咨询师<br>随时倾听，始终陪伴</h1>
             <p>基于认知行为疗法(CBT)的专业心理支持，24小时在线，保护隐私，帮助您缓解压力、焦虑和抑郁情绪。</p>
             <div class="hero-buttons">
-                <button class="cta-button" onclick="location.href='#chat'">免费试用</button>
+                <button class="cta-button" onclick="document.getElementById('chat').scrollIntoView({ behavior: 'smooth' });">免费试用</button>
                 <button class="secondary-button" onclick="showAuthModal()">了解更多</button>
             </div>
         </div>
@@ -514,7 +514,12 @@
     <script>
         // 显示登录/注册模态框
         function showAuthModal() {
-            document.getElementById('auth-modal').style.display = 'flex';
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+            } else {
+                console.error('Auth modal not found');
+            }
         }
         
         // 切换登录/注册表单
@@ -522,19 +527,31 @@
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('register-form');
             
-            if (loginForm.style.display === 'none') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
+            if (loginForm && registerForm) {
+                if (loginForm.style.display === 'none') {
+                    loginForm.style.display = 'block';
+                    registerForm.style.display = 'none';
+                } else {
+                    loginForm.style.display = 'none';
+                    registerForm.style.display = 'block';
+                }
             } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
+                console.error('Login or register form not found');
             }
         }
         
         // 登录功能
         async function login() {
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
+            const usernameInput = document.getElementById('login-username');
+            const passwordInput = document.getElementById('login-password');
+            
+            if (!usernameInput || !passwordInput) {
+                alert('页面元素缺失，请刷新页面重试');
+                return;
+            }
+            
+            const username = usernameInput.value;
+            const password = passwordInput.value;
             
             if (!username || !password) {
                 alert('请填写用户名和密码');
@@ -542,8 +559,15 @@
             }
             
             try {
+                // 确定API基础URL
+                let apiBaseUrl = '';
+                if (window.location.protocol === 'file:') {
+                    // 如果是通过文件协议打开，则使用localhost:3000
+                    apiBaseUrl = 'http://localhost:3000';
+                }
+                
                 // 调用实际的登录API
-                const response = await fetch('http://localhost:3000/api/auth/login', {
+                const response = await fetch(`${apiBaseUrl}/api/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -554,35 +578,66 @@
                 if (response.ok) {
                     const data = await response.json();
                     localStorage.setItem('token', data.token);
-                    alert('登录成功');
+                    alert('登录成功！');
                     closeAuthModal();
                     // 登录成功直接跳转到聊天界面
-                    document.querySelector('#chat .chat-input input').focus();
-                    document.getElementById('chat').scrollIntoView({ behavior: 'smooth' });
+                    const chatInput = document.querySelector('#chat .chat-input input');
+                    if (chatInput) {
+                        chatInput.focus();
+                    }
+                    const chatSection = document.getElementById('chat');
+                    if (chatSection) {
+                        chatSection.scrollIntoView({ behavior: 'smooth' });
+                    }
                 } else {
-                    const error = await response.json();
-                    alert('登录失败: ' + (error.error || '未知错误'));
+                    // 尝试解析错误响应
+                    let errorMessage = '未知错误';
+                    try {
+                        const error = await response.json();
+                        errorMessage = error.error || '登录失败';
+                    } catch (e) {
+                        // 如果无法解析JSON，则使用状态文本
+                        errorMessage = response.statusText || '登录失败';
+                    }
+                    alert('登录失败: ' + errorMessage);
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                alert('登录过程中发生错误: ' + error.message);
+                if (error instanceof TypeError && error.message.includes('fetch')) {
+                    alert('无法连接到服务器，请确保后端服务正在运行并且可以通过正确的URL访问页面');
+                } else {
+                    alert('登录过程中发生错误: ' + error.message);
+                }
             }
         }
         
         // 注册功能
         async function register() {
-            const username = document.getElementById('register-username').value;
-            const password = document.getElementById('register-password').value;
-            const email = document.getElementById('register-email').value;
+            const usernameInput = document.getElementById('register-username');
+            const passwordInput = document.getElementById('register-password');
+            const emailInput = document.getElementById('register-email');
+            
+            if (!usernameInput || !passwordInput) {
+                alert('页面元素缺失，请刷新页面重试');
+                return;
+            }
+            
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            const email = emailInput ? emailInput.value : '';
             
             if (!username || !password) {
                 alert('请填写用户名和密码');
                 return;
             }
             
+            // 确定API基础URL
+            const isLocalFile = window.location.protocol === 'file:';
+            const apiBaseUrl = isLocalFile ? 'http://localhost:3000' : '';
+            
             try {
                 // 调用实际的注册API
-                const response = await fetch('http://localhost:3000/api/auth/register', {
+                const response = await fetch(`${apiBaseUrl}/api/auth/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -593,35 +648,52 @@
                 if (response.ok) {
                     const data = await response.json();
                     localStorage.setItem('token', data.token);
-                    alert('注册成功，5秒后将自动跳转到聊天界面');
+                    alert('注册成功！');
                     closeAuthModal();
-                    // 注册成功5秒后跳转到聊天界面
-                    setTimeout(() => {
-                        document.querySelector('#chat .chat-input input').focus();
-                        document.getElementById('chat').scrollIntoView({ behavior: 'smooth' });
-                    }, 5000);
+                    // 注册成功立即跳转到登录界面
+                    toggleForms(); // 切换到登录表单
                 } else {
-                    const error = await response.json();
-                    alert('注册失败: ' + (error.error || '未知错误'));
+                    // 尝试解析错误响应
+                    let errorMessage = '未知错误';
+                    try {
+                        const error = await response.json();
+                        errorMessage = error.error || '注册失败';
+                    } catch (e) {
+                        // 如果无法解析JSON，则使用状态文本
+                        errorMessage = response.statusText || '注册失败';
+                    }
+                    alert('注册失败: ' + errorMessage);
                 }
             } catch (error) {
                 console.error('Registration error:', error);
-                alert('注册过程中发生错误: ' + error.message);
+                if (error instanceof TypeError && error.message.includes('fetch')) {
+                    alert('无法连接到服务器，请确保后端服务正在运行并且可以通过正确的URL访问页面');
+                } else {
+                    alert('注册过程中发生错误: ' + error.message);
+                }
             }
         }
         
         // 关闭模态框
         function closeAuthModal() {
-            document.getElementById('auth-modal').style.display = 'none';
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
         }
         
         // 点击模态框外部关闭模态框
-        document.getElementById('auth-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeAuthModal();
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('auth-modal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeAuthModal();
+                    }
+                });
             }
         });
-        
+
         // 简单的交互脚本
         document.addEventListener('DOMContentLoaded', function () {
             const chatInput = document.querySelector('.chat-input input');
@@ -630,6 +702,11 @@
 
             // 发送消息功能
             async function sendMessage() {
+                if (!chatInput || !chatMessages) {
+                    console.error('Chat elements not found');
+                    return;
+                }
+
                 const message = chatInput.value.trim();
                 if (message) {
                     // 添加用户消息到界面
@@ -647,7 +724,7 @@
                     try {
                         // 如果用户已登录，将消息保存到数据库
                         if (token) {
-                            const sessionResponse = await fetch('http://localhost:3000/api/consultations', {
+                            const sessionResponse = await fetch('/api/consultations', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -693,22 +770,34 @@
                 }
             }
 
-            sendButton.addEventListener('click', sendMessage);
+            if (sendButton) {
+                sendButton.addEventListener('click', sendMessage);
+            }
 
-            chatInput.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
 
             // CTA按钮点击事件
             const ctaButtons = document.querySelectorAll('.cta-button');
             ctaButtons.forEach(button => {
                 button.addEventListener('click', function () {
                     // 跳转到聊天界面
-                    document.querySelector('#chat .chat-input input').focus();
-                    document.getElementById('chat').scrollIntoView({ behavior: 'smooth' });
+                    const chatInput = document.querySelector('#chat .chat-input input');
+                    if (chatInput) {
+                        chatInput.focus();
+                    }
+                    const chatSection = document.getElementById('chat');
+                    if (chatSection) {
+                        chatSection.scrollIntoView({ behavior: 'smooth' });
+                    }
                 });
             });
         });
     </script>
+</body>
+</html>
