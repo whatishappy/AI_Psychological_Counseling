@@ -15,7 +15,17 @@ import path from 'path';
 const app = express();
 
 // 安全中间件
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "script-src-attr": ["'self'", "'unsafe-inline'"],
+      },
+    },
+  })
+);
 app.use(cors());
 app.use(json({ limit: '1mb' }));
 

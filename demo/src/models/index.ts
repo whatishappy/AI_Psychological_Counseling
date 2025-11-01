@@ -21,7 +21,7 @@ export interface UserAttributes {
 
 type UserCreationAttributes = Optional<UserAttributes, 'user_id' | 'user_type' | 'is_active'>;
 
-export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
+class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
     declare user_id: number;
     declare username: string;
     declare password_hash: string;
@@ -102,6 +102,7 @@ User.init(
         }
     },
     {
+        sequelize,
         tableName: 'users',
         timestamps: true,
         underscored: true,
@@ -188,7 +189,7 @@ interface ConsultationMessageAttributes {
 
 interface ConsultationMessageCreationAttributes extends Optional<ConsultationMessageAttributes, 'message_id' | 'mood_rating' | 'created_at'> { }
 
-export class ConsultationMessage extends Model<ConsultationMessageAttributes, ConsultationMessageCreationAttributes>
+class ConsultationMessage extends Model<ConsultationMessageAttributes, ConsultationMessageCreationAttributes>
     implements ConsultationMessageAttributes {
     public message_id!: number;
     public session_id!: number;
@@ -223,7 +224,7 @@ ConsultationMessage.init(
     }
 );
 
-export class ExercisePlan extends Model { }
+class ExercisePlan extends Model { }
 ExercisePlan.init(
     {
         plan_id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -253,7 +254,7 @@ ExercisePlan.init(
     }
 );
 
-export class BodyMeasurement extends Model { }
+class BodyMeasurement extends Model { }
 BodyMeasurement.init(
     {
         measurement_id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -273,7 +274,7 @@ BodyMeasurement.init(
     { sequelize, tableName: 'body_measurements' }
 );
 
-export class PsychologicalAssessment extends Model { }
+class PsychologicalAssessment extends Model { }
 PsychologicalAssessment.init(
     {
         assessment_id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -292,7 +293,7 @@ PsychologicalAssessment.init(
     { sequelize, tableName: 'psychological_assessments' }
 );
 
-export class PhysicalAssessment extends Model { }
+class PhysicalAssessment extends Model { }
 PhysicalAssessment.init(
     {
         assessment_id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -310,7 +311,7 @@ PhysicalAssessment.init(
     { sequelize, tableName: 'physical_assessments' }
 );
 
-export class Admin extends Model { }
+class Admin extends Model { }
 Admin.init(
     {
         admin_id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -326,7 +327,7 @@ Admin.init(
     { sequelize, tableName: 'admins' }
 );
 
-export class UserLoginLog extends Model { }
+class UserLoginLog extends Model { }
 UserLoginLog.init(
     {
         log_id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -341,7 +342,7 @@ UserLoginLog.init(
 );
 
 // 建立模型关联
-User.hasMany(ConsultationSession, { foreignKey: 'user_id', allowNull: true });
+User.hasMany(ConsultationSession, { foreignKey: 'user_id' });
 ConsultationSession.belongsTo(User, { foreignKey: 'user_id' });
 ConsultationSession.hasMany(ConsultationMessage, { foreignKey: 'session_id' });
 ConsultationMessage.belongsTo(ConsultationSession, { foreignKey: 'session_id' });
@@ -376,15 +377,8 @@ export {
     UserLoginLog 
 };
 
-// 单独导出模型，便于在路由中直接导入
-export { 
-    User, 
-    ConsultationSession, 
-    ConsultationMessage,
-    ExercisePlan, 
-    BodyMeasurement, 
-    PsychologicalAssessment, 
-    PhysicalAssessment, 
-    Admin, 
-    UserLoginLog 
+// 单独导出类型
+export type { 
+    ConsultationSessionAttributes,
+    ConsultationMessageAttributes
 };

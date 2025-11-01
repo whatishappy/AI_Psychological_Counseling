@@ -1,7 +1,7 @@
 import { Sequelize } from 'sequelize';
 
 const {
-    DB_HOST = '127.0.0.1',
+    DB_HOST = 'localhost',
     DB_PORT = '3306',
     DB_USER = 'root',
     DB_PASSWORD = '',
@@ -17,5 +17,3 @@ export const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
         timestamps: false
     }
 });
-
-

@@ -49,17 +49,28 @@ router.post(
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+        console.log('Login attempt:', { username }); // 添加日志
+        
         const user = await User.findOne({ where: { username } });
-        if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+        if (!user) {
+            console.log('User not found:', username); // 添加日志
+            return res.status(401).json({ error: '用户名或密码错误' });
+        }
+        
+        console.log('User found, checking password...'); // 添加日志
         const ok = await bcrypt.compare(password, user.getDataValue('password_hash'));
-        if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+        if (!ok) {
+            console.log('Invalid password for user:', username); // 添加日志
+            return res.status(401).json({ error: '用户名或密码错误' });
+        }
+        
         const token = signToken({ userId: user.getDataValue('user_id'), userType: 'registered' });
         await user.update({ last_login: new Date() });
         await UserLoginLog.create({ user_id: user.getDataValue('user_id'), login_type: 'registered', user_agent: req.headers['user-agent'] || '' });
         res.json({ token });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ error: 'Login failed' });
+        res.status(500).json({ error: '登录失败' });
     }
 });
 

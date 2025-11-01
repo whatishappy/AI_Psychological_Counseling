@@ -35,8 +35,32 @@ router.post('/', requireAuth, async (req: Request<{}, {}, ConsultationRequestBod
             },
             defaults: { 
                 user_id: userId, 
-                consultation_type: consultation_type || 'psychological'
+                consultation_type: consultation_type || 'psychological',
+                user_query: user_query,
+                ai_response: ai_response
             }
+        });
+        
+        // 如果会话已存在，更新最新的用户查询和AI响应
+        if (session.getDataValue('user_query') !== user_query || session.getDataValue('ai_response') !== ai_response) {
+            await session.update({
+                user_query: user_query,
+                ai_response: ai_response
+            });
+        }
+        
+        // 创建用户消息记录
+        await ConsultationMessage.create({
+            session_id: session.getDataValue('session_id'),
+            message_type: 'user',
+            content: user_query
+        });
+        
+        // 创建AI回复记录
+        await ConsultationMessage.create({
+            session_id: session.getDataValue('session_id'),
+            message_type: 'ai',
+            content: ai_response
         });
         
         res.json({
