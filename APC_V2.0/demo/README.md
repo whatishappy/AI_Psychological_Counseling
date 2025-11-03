@@ -27,11 +27,35 @@
 - MySQL >= 5.7
 - npm 或 yarn
 
+## 📁 项目结构说明
+
+```
+APC_v2.0/
+├── demo/                    # 主要开发目录
+│   ├── src/                 # TypeScript源代码
+│   │   └── app.ts           # 应用主入口文件
+│   ├── migrations/          # 数据库迁移文件
+│   ├── scripts/             # 脚本文件
+│   ├── dist/                # 编译后的JavaScript文件
+│   ├── package.json         # 演示目录的配置文件（指向根目录依赖）
+│   ├── tsconfig.json        # TypeScript配置
+│   ├── simple-server.js     # 简易开发服务器
+│   ├── index.html           # 前端主页面
+│   └── ...                  # 其他配置和资源文件
+├── package.json             # 项目根目录配置文件（统一管理所有依赖项）
+└── tsconfig.json            # 根目录TypeScript配置
+```
+
+注意：项目依赖项已统一在根目录的 package.json 中管理，避免重复安装 node_modules。demo 目录中的 package.json 仅包含项目特定的元数据和脚本。
+
 ## 🚀 快速启动
 
 ### 1. 安装依赖
 ```bash
+# 在项目根目录安装依赖（推荐）
 npm install
+
+# 注意：不要在demo目录单独安装依赖，这会导致重复的node_modules
 ```
 
 ### 2. 配置环境变量
@@ -58,6 +82,11 @@ GLM_MODEL=glm-4
 
 ### 4. 启动服务
 ```bash
+# 在项目根目录启动（推荐）
+npm run dev
+
+# 或者在demo目录启动
+cd demo
 npm run dev
 ```
 服务将在 `http://localhost:3000` 启动

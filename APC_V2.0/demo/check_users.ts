@@ -1,7 +1,8 @@
-import { User } from './src/models';
+import { sequelize, User } from './src/models/index';
 
 async function checkUsers() {
     try {
+        await sequelize.sync();
         const users = await User.findAll();
         console.log('Users in database:');
         users.forEach(u => {

@@ -608,374 +608,451 @@
     <script>
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function () {
-            // 获取DOM元素
-            const chatInput = document.getElementById('chat-input');
-            const sendButton = document.getElementById('send-button');
-            const chatMessages = document.querySelector('.chat-messages');
+            try {
+                // 获取DOM元素
+                const chatInput = document.getElementById('chat-input');
+                const sendButton = document.getElementById('send-button');
+                const chatMessages = document.querySelector('.chat-messages');
 
-            // 添加系统提示词到聊天界面
-            function addSystemPrompt() {
-                const promptMessage = `GLM心理伴侣智能体提示词
-（核心指令 - 请将此段置于系统提示或对话开头）
-
-【角色设定】
-你是一名名为"心晴"的AI心理陪伴助手。你的核心使命是提供倾听、共情、积极关注和无条件接纳，成为一个安全、非评判的树洞。你并非专业心理咨询师，不能提供诊断或治疗方案。你的定位是"伙伴"和"倾听者"，旨在通过温暖的对话帮助用户梳理情绪，发现内在力量。
-
-核心能力与原则：
-
-建立安全感与信任：
-
-开场白示例："你好，我是心晴，一个愿意静静听你说话的朋友。无论你想分享什么，这里都是一个安全、没有评判的空间。"
-
-始终使用温暖、平和、支持性的语气。
-
-绝对禁止批评、说教或轻视用户的感受。
-
-深度倾听与共情回应：
-
-首先确认并接纳用户的情绪。
-
-例句："听起来你真的感到很孤独/愤怒/无助……"
-
-"这件事一定让你非常难过，我能感受到你的委屈。"
-
-使用开放式问题鼓励用户深入表达。
-
-例句："你愿意多和我聊聊那种感觉吗？"
-
-"这件事发生时，你心里在想些什么呢？"
-
-通过总结和复述，表明你在认真听。
-
-例句："所以，我理解你的困扰主要是……我理解得对吗？"
-
-积极关注与赋能：
-
-帮助用户看到自身的优势和资源。
-
-例句："在这么难的情况下，你依然在坚持寻找解决办法，这本身就很有力量。"
-
-引导用户关注微小的积极面和可能性，而非直接给建议。
-
-例句："我们一起来想想，有没有哪一刻，哪怕只有一瞬间，感觉会好一点点？"
-
-使用温和的"认知重构"技巧，帮助用户从不同角度看待问题。
-
-例句："如果把'我失败了'换成'我学到了'，感觉会有什么不同？"
-
-严格的边界与安全协议：
-
-你绝不能提供专业的心理、医学诊断或治疗建议。
-
-当涉及自伤、伤人等严重危机情况时，你必须明确、坚定地引导用户寻求专业帮助。
-
-*标准回应："听到你这么说，我非常为你担心。你所描述的情况非常严重，我作为一个AI无法提供足够的帮助。你的生命和安全是第一位的。请立即联系你身边的亲友，或者拨打心理危机干预热线（例如：北京心理援助热线 010-82951332）。你值得获得专业的支持。"*
-
-如果话题超出你的能力范围，应坦诚说明。
-
-交互风格：
-
-语言风格： 温和、真诚、简洁。可以适当使用表情符号（如 😊、🤗、❤️）来增加亲和力，但不要过度。
-
-回应长度： 以中短句为主，避免长篇大论的说教，重在互动和引导。
-
-核心目标： 让用户感到被听见、被理解、被接纳，并陪伴他们找到属于自己的答案和力量。`;
-
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message ai-message';
-                messageDiv.innerHTML = '<strong>系统提示词：</strong><br>' + promptMessage.replace(/\n/g, '<br>');
-                chatMessages.appendChild(messageDiv);
-                
-                // 滚动到底部
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-
-            // 发送消息功能
-            async function sendMessage() {
-                if (!chatInput || !chatMessages) {
-                    console.error('Chat elements not found');
-                    return;
+                // 添加系统提示词（仅用于初始化，不显示在聊天界面中）
+                function addSystemPrompt() {
+                    try {
+                        // 系统提示词仅用于AI模型，不显示在用户界面上
+                        console.log('系统提示词已设置（不显示给用户）');
+                    } catch (error) {
+                        console.error('Error in addSystemPrompt:', error);
+                    }
                 }
 
-                const message = chatInput.value.trim();
-                if (message) {
-                    // 添加用户消息到界面
-                    addMessage(message, 'user');
-
-                    // 清空输入框
-                    chatInput.value = '';
-
-                    // 获取token（如果用户已登录）
-                    const token = localStorage.getItem('token');
-
+                // 发送消息功能
+                async function sendMessage() {
                     try {
-                        // 如果用户已登录，将消息保存到数据库
-                        if (token) {
-                            const sessionResponse = await fetch('/api/consultations', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                },
-                                body: JSON.stringify({ 
-                                    user_query: message,
-                                    consultation_type: 'psychological'
-                                })
-                            });
-                            
-                            if (sessionResponse.ok) {
-                                const sessionData = await sessionResponse.json();
-                                console.log('消息已保存到数据库:', sessionData);
-                                
-                                // 直接使用已返回的AI响应
-                                addMessage(sessionData.ai_response, 'ai');
-                            } else {
-                                console.error('保存消息到数据库失败:', await sessionResponse.json());
-                                addSimulatedResponse();
+                        // 确保DOM元素存在
+                        const chatInput = document.getElementById('chat-input');
+                        const chatMessages = document.querySelector('.chat-messages');
+                        
+                        if (!chatInput || !chatMessages) {
+                            console.error('Chat elements not found');
+                            return;
+                        }
+
+                        const message = chatInput.value.trim();
+                        if (message) {
+                            // 添加用户消息到界面
+                            addMessage(message, 'user');
+
+                            // 清空输入框
+                            chatInput.value = '';
+
+                            // 获取token（如果用户已登录）
+                            const token = localStorage.getItem('token');
+
+                            try {
+                                // 如果用户已登录，将消息发送到AI咨询API
+                                if (token) {
+                                    const controller = new AbortController();
+                                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+                                    
+                                    const sessionResponse = await fetch('/api/consultations', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({ 
+                                            user_query: message,
+                                            consultation_type: 'psychological'
+                                        }),
+                                        signal: controller.signal
+                                    });
+                                    
+                                    clearTimeout(timeoutId);
+                                    
+                                    if (sessionResponse.ok) {
+                                        const sessionData = await sessionResponse.json();
+                                        console.log('AI响应:', sessionData);
+                                        
+                                        // 显示AI响应（不包括系统提示词）
+                                        if (sessionData && sessionData.ai_response) {
+                                            addMessage(sessionData.ai_response, 'ai');
+                                        } else {
+                                            addSimulatedResponse();
+                                        }
+                                    } else {
+                                        console.error('AI咨询失败:', await sessionResponse.text());
+                                        addMessage('抱歉，AI咨询失败，请稍后重试。', 'system');
+                                    }
+                                } else {
+                                    // 如果用户未登录，使用模拟回复
+                                    addSimulatedResponse();
+                                }
+                            } catch (error) {
+                                if (error.name === 'AbortError') {
+                                    console.error('请求超时');
+                                    addMessage('请求超时，请稍后重试', 'system');
+                                } else {
+                                    console.error('处理消息时出错:', error);
+                                    addSimulatedResponse();
+                                }
                             }
-                        } else {
-                            // 如果用户未登录，使用模拟回复
-                            addSimulatedResponse();
                         }
                     } catch (error) {
-                        console.error('处理消息时出错:', error);
-                        addSimulatedResponse();
+                        console.error('Error in sendMessage:', error);
                     }
                 }
-            }
 
-            // 添加消息到聊天界面
-            function addMessage(content, sender) {
-                const chatMessages = document.querySelector('.chat-messages');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender}-message`;
-                messageDiv.textContent = content;
-                chatMessages.appendChild(messageDiv);
+                // 添加消息到聊天界面
+                function addMessage(content, sender) {
+                    try {
+                        const chatMessages = document.querySelector('.chat-messages');
+                        if (!chatMessages) {
+                            console.error('Chat messages container not found');
+                            return;
+                        }
+                        
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = `message ${sender}-message`;
+                        messageDiv.textContent = content;
+                        chatMessages.appendChild(messageDiv);
+                        
+                        // 滚动到底部
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } catch (error) {
+                        console.error('Error adding message to chat:', error);
+                    }
+                }
+
+                // 添加模拟回复
+                function addSimulatedResponse() {
+                    try {
+                        setTimeout(() => {
+                            try {
+                                const aiResponses = [
+                                    "谢谢你的分享。能告诉我更多关于这件事的感受吗？",
+                                    "我理解你的感受。这种情况确实会让人感到压力。",
+                                    "听起来你现在面临一些挑战。我们可以一起探讨一下应对的方法。",
+                                    "你的感受是完全可以理解的。很多人都会在类似情况下感到焦虑。",
+                                    "感谢你愿意分享这些。让我们一起看看如何改善这种情况。"
+                                ];
+
+                                const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+                                addMessage(randomResponse, 'ai');
+                            } catch (error) {
+                                console.error('Error in simulated response:', error);
+                            }
+                        }, 1000);
+                    } catch (error) {
+                        console.error('Error setting up simulated response:', error);
+                    }
+                }
+
+                // 添加系统提示词（仅用于初始化，不显示在聊天界面中）
+                function addSystemPrompt() {
+                    try {
+                        // 系统提示词仅用于AI模型，不显示在用户界面上
+                        console.log('系统提示词已设置（不显示给用户）');
+                    } catch (error) {
+                        console.error('Error in addSystemPrompt:', error);
+                    }
+                }
+
+                // 绑定发送按钮事件
+                try {
+                    if (sendButton) {
+                        sendButton.addEventListener('click', function(e) {
+                            try {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                sendMessage();
+                            } catch (error) {
+                                console.error('Error in send button click handler:', error);
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error binding send button event:', error);
+                }
+
+                // 绑定回车键事件
+                try {
+                    if (chatInput) {
+                        chatInput.addEventListener('keypress', function (e) {
+                            try {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    sendMessage();
+                                }
+                            } catch (error) {
+                                console.error('Error in keypress handler:', error);
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error binding keypress event:', error);
+                }
+
+                // 滚动到聊天区域
+                window.scrollToChat = function() {
+                    try {
+                        const chatSection = document.getElementById('chat');
+                        if (chatSection) {
+                            chatSection.scrollIntoView({ behavior: 'smooth' });
+                            const chatInput = document.getElementById('chat-input');
+                            if (chatInput) {
+                                chatInput.focus();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error in scrollToChat:', error);
+                    }
+                };
                 
-                // 滚动到底部
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                // 初始化时添加系统提示词
+                addSystemPrompt();
+            } catch (error) {
+                console.error('Error in DOMContentLoaded:', error);
             }
-
-            // 添加模拟回复
-            function addSimulatedResponse() {
-                setTimeout(() => {
-                    const aiResponses = [
-                        "谢谢你的分享。能告诉我更多关于这件事的感受吗？",
-                        "我理解你的感受。这种情况确实会让人感到压力。",
-                        "听起来你现在面临一些挑战。我们可以一起探讨一下应对的方法。",
-                        "你的感受是完全可以理解的。很多人都会在类似情况下感到焦虑。",
-                        "感谢你愿意分享这些。让我们一起看看如何改善这种情况。"
-                    ];
-
-                    const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-                    addMessage(randomResponse, 'ai');
-                }, 1000);
-            }
-
-            // 绑定发送按钮事件
-            if (sendButton) {
-                sendButton.addEventListener('click', sendMessage);
-            }
-
-            // 绑定回车键事件
-            if (chatInput) {
-                chatInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') {
-                        sendMessage();
-                    }
-                });
-            }
-
-            // 滚动到聊天区域
-            window.scrollToChat = function() {
-                const chatSection = document.getElementById('chat');
-                if (chatSection) {
-                    chatSection.scrollIntoView({ behavior: 'smooth' });
-                    document.getElementById('chat-input').focus();
-                }
-            };
-            
-            // 初始化时添加系统提示词
-            addSystemPrompt();
         });
 
         // 显示登录/注册模态框
         function showAuthModal() {
-            const modal = document.getElementById('auth-modal');
-            if (modal) {
-                modal.style.display = 'flex';
-            } else {
-                console.error('Auth modal not found');
+            try {
+                const modal = document.getElementById('auth-modal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                } else {
+                    console.error('Auth modal not found');
+                }
+            } catch (error) {
+                console.error('Error in showAuthModal:', error);
             }
         }
         
         // 隐藏模态框
         function hideAuthModal() {
-            const modal = document.getElementById('auth-modal');
-            if (modal) {
-                modal.style.display = 'none';
+            try {
+                const modal = document.getElementById('auth-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error in hideAuthModal:', error);
             }
         }
         
         // 点击模态框外部区域关闭模态框
         window.onclick = function(event) {
-            const modal = document.getElementById('auth-modal');
-            if (event.target === modal) {
-                hideAuthModal();
+            try {
+                const modal = document.getElementById('auth-modal');
+                if (event.target === modal) {
+                    hideAuthModal();
+                }
+            } catch (error) {
+                console.error('Error in window.onclick:', error);
             }
         }
         
         // 切换登录/注册表单
         function toggleForms() {
-            const loginForm = document.getElementById('login-form');
-            const registerForm = document.getElementById('register-form');
-            
-            if (loginForm && registerForm) {
-                if (loginForm.style.display === 'none') {
-                    loginForm.style.display = 'block';
-                    registerForm.style.display = 'none';
+            try {
+                const loginForm = document.getElementById('login-form');
+                const registerForm = document.getElementById('register-form');
+                
+                if (loginForm && registerForm) {
+                    if (loginForm.style.display === 'none') {
+                        loginForm.style.display = 'block';
+                        registerForm.style.display = 'none';
+                    } else {
+                        loginForm.style.display = 'none';
+                        registerForm.style.display = 'block';
+                    }
                 } else {
-                    loginForm.style.display = 'none';
-                    registerForm.style.display = 'block';
+                    console.error('Login or register form not found');
                 }
-            } else {
-                console.error('Login or register form not found');
+            } catch (error) {
+                console.error('Error in toggleForms:', error);
             }
         }
         
         // 登录功能
         async function login() {
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
-            
-            if (!username || !password) {
-                alert('请填写用户名和密码');
-                return;
-            }
-            
             try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
+                const usernameInput = document.getElementById('login-username');
+                const passwordInput = document.getElementById('login-password');
                 
-                const data = await response.json();
-                console.log('Login response:', data); // 添加日志
+                if (!usernameInput || !passwordInput) {
+                    alert('表单元素未找到');
+                    return;
+                }
                 
-                if (response.ok) {
-                    // 保存token到localStorage
-                    localStorage.setItem('token', data.token);
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                
+                if (!username || !password) {
+                    alert('请填写用户名和密码');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
                     
-                    // 隐藏模态框
-                    hideAuthModal();
+                    const data = await response.json();
+                    console.log('Login response:', data);
                     
-                    // 清空表单
-                    document.getElementById('login-username').value = '';
-                    document.getElementById('login-password').value = '';
-                    
-                    // 跳转到聊天界面
-                    scrollToChat();
-                    
-                    alert('登录成功！');
-                } else {
-                    // 根据不同错误类型显示具体信息
-                    let errorMessage = '登录失败';
-                    if (data.error) {
-                        errorMessage = data.error;
+                    if (response.ok && data.token) {
+                        // 保存token到localStorage
+                        localStorage.setItem('token', data.token);
+                        
+                        // 隐藏模态框
+                        hideAuthModal();
+                        
+                        // 清空表单
+                        usernameInput.value = '';
+                        passwordInput.value = '';
+                        
+                        // 跳转到聊天界面
+                        setTimeout(() => {
+                            try {
+                                scrollToChat();
+                            } catch (error) {
+                                console.error('Error in scrollToChat timeout:', error);
+                            }
+                        }, 100);
+                        
+                        alert('登录成功！');
+                    } else {
+                        // 根据不同错误类型显示具体信息
+                        let errorMessage = '登录失败';
+                        if (data.error) {
+                            errorMessage = data.error;
+                        }
+                        alert(errorMessage);
                     }
-                    alert(errorMessage);
+                } catch (error) {
+                    console.error('Login error:', error);
+                    alert('登录时发生错误，请稍后重试');
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                alert('登录时发生错误，请稍后重试');
+                console.error('Error in login function:', error);
             }
         }
         
         // 注册功能
         async function register() {
-            const username = document.getElementById('register-username').value;
-            const password = document.getElementById('register-password').value;
-            const email = document.getElementById('register-email').value;
-            
-            if (!username || !password) {
-                alert('请填写用户名和密码');
-                return;
-            }
-            
-            if (password.length < 6) {
-                alert('密码长度至少为6位');
-                return;
-            }
-            
             try {
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password, email })
-                });
+                const usernameInput = document.getElementById('register-username');
+                const passwordInput = document.getElementById('register-password');
+                const emailInput = document.getElementById('register-email');
                 
-                const data = await response.json();
+                if (!usernameInput || !passwordInput) {
+                    alert('表单元素未找到');
+                    return;
+                }
                 
-                if (response.ok) {
-                    // 切换到登录表单
-                    toggleForms();
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                const email = emailInput ? emailInput.value : '';
+                
+                if (!username || !password) {
+                    alert('请填写用户名和密码');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    alert('密码长度至少为6位');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password, email })
+                    });
                     
-                    // 清空注册表单
-                    document.getElementById('register-username').value = '';
-                    document.getElementById('register-password').value = '';
-                    document.getElementById('register-email').value = '';
+                    const data = await response.json();
                     
-                    alert('注册成功！请登录。');
-                } else {
-                    const errorMessage = data.error === 'Username exists' 
-                        ? '用户名已存在' 
-                        : data.error === 'Email already registered' 
-                        ? '邮箱已被注册' 
-                        : data.error || '注册失败';
-                    alert('注册失败: ' + errorMessage);
+                    if (response.ok) {
+                        // 切换到登录表单
+                        toggleForms();
+                        
+                        // 清空注册表单
+                        usernameInput.value = '';
+                        passwordInput.value = '';
+                        if (emailInput) {
+                            emailInput.value = '';
+                        }
+                        
+                        alert('注册成功！请登录。');
+                    } else {
+                        const errorMessage = data.error || '注册失败';
+                        alert('注册失败: ' + errorMessage);
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    alert('注册时发生错误，请稍后重试');
                 }
             } catch (error) {
-                console.error('Registration error:', error);
-                alert('注册时发生错误，请稍后重试');
+                console.error('Error in register function:', error);
             }
         }
         
         // 检查用户登录状态
         function checkAuthStatus() {
-            const token = localStorage.getItem('token');
-            const ctaButton = document.querySelector('.cta-button');
-            
-            if (token && ctaButton) {
-                ctaButton.textContent = '登出';
-                ctaButton.onclick = logout;
+            try {
+                const token = localStorage.getItem('token');
+                const ctaButton = document.querySelector('.cta-button');
+                
+                if (token && ctaButton) {
+                    ctaButton.textContent = '登出';
+                    ctaButton.onclick = logout;
+                }
+            } catch (error) {
+                console.error('Error in checkAuthStatus:', error);
             }
         }
         
         // 登出功能
         function logout() {
-            // 清除本地存储的token
-            localStorage.removeItem('token');
-            
-            // 更新按钮状态
-            const ctaButton = document.querySelector('.cta-button');
-            if (ctaButton) {
-                ctaButton.textContent = '登录/注册';
-                ctaButton.onclick = showAuthModal;
+            try {
+                // 清除本地存储的token
+                localStorage.removeItem('token');
+                
+                // 更新按钮状态
+                const ctaButton = document.querySelector('.cta-button');
+                if (ctaButton) {
+                    ctaButton.textContent = '登录/注册';
+                    ctaButton.onclick = showAuthModal;
+                }
+                
+                alert('已成功登出');
+            } catch (error) {
+                console.error('Error in logout:', error);
             }
-            
-            alert('已成功登出');
         }
         
         // 在页面加载完成后检查认证状态
         document.addEventListener('DOMContentLoaded', function () {
-            checkAuthStatus();
+            try {
+                checkAuthStatus();
+            } catch (error) {
+                console.error('Error in DOMContentLoaded:', error);
+            }
         });
-
+        
+        // 添加全局错误处理
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+        });
     </script>
 </body>
 
