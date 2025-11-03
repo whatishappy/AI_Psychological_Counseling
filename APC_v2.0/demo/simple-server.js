@@ -317,28 +317,20 @@ app.get('*', (req, res) => {
   }
 });
 
-// 启动服务器并监听指定端口
-app.listen(PORT, async () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
-  console.log(`📄 Visit http://localhost:${PORT} to access the application`);
-  console.log(`🔍 Health check: http://localhost:${PORT}/health`);
-  console.log('✅ GLM API密钥已配置，将使用真实AI模型');
-  
-  try {
-    // 确保数据库同步（创建表）
-    await sequelize.sync({ force: true });
-    console.log('✅ Database synced successfully');
+// 启动服务器
+const PORT = process.env.PORT || 3001; // 更改端口为3001避免冲突
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Visit http://localhost:${PORT} to access the application`);
     
-    // 创建一个测试用户用于演示
-    const hashedPassword = await bcrypt.hash('testpassword123', SALT_ROUNDS);
-    await User.create({ 
-      username: 'testuser', 
-      password_hash: hashedPassword
-    });
-    console.log('✅ Created test user (username: testuser, password: testpassword123)');
-  } catch (error) {
-    console.error('Error initializing database:', error);
-  }
+    // 显示当前使用的AI模型
+    const modelEnv = process.env.AI_MODEL_TYPE || 'mock';
+    console.log(`Current AI model: ${modelEnv}`);
+    
+    if (modelEnv === 'mock') {
+        console.log('Tip: Set AI_MODEL_TYPE=glm or AI_MODEL_TYPE=glm-4v to use real AI models');
+    }
 });
 
 module.exports = app;
