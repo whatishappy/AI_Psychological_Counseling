@@ -1,0 +1,61 @@
+{
+  // TypeScript编译器配置
+  "compilerOptions": {
+    // 目标JavaScript版本
+    "target": "ES2020",
+    
+    // 模块系统
+    "module": "Node16",
+    "moduleResolution": "node16",
+    
+    // 输出目录
+    "outDir": "dist",
+    
+    // 源代码根目录
+    "rootDir": ".",
+    
+    // 严格类型检查选项
+    "strict": true,
+    
+    // 允许默认导入
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    
+    // 强制一致的文件名大小写
+    "forceConsistentCasingInFileNames": true,
+    
+    // 跳过库声明文件的类型检查
+    "skipLibCheck": true,
+    
+    // 允许导入.json文件
+    "resolveJsonModule": true,
+    
+    // 忽略TypeScript版本弃用警告
+    "ignoreDeprecations": "5.0",
+    
+    // 指定类型定义文件的搜索目录
+    "typeRoots": ["./node_modules/@types"],
+    
+    // 启用装饰器支持（Sequelize Models需要）
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  
+  // 包含的文件模式
+  "include": [
+    "demo/src/**/*.ts",
+    "demo/scripts/**/*.ts",
+    "demo/migrations/**/*.ts"
+  ],
+  
+  // 排除的文件模式
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  
+  // ts-node特定配置
+  "ts-node": {
+    "esm": false
+  }
+}
