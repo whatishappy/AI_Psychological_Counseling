@@ -615,33 +615,37 @@
         <div class="modal-content">
             <div id="login-form">
                 <h2>用户登录</h2>
-                <div class="form-group">
-                    <label for="login-username">用户名</label>
-                    <input type="text" id="login-username" placeholder="请输入用户名" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">密码</label>
-                    <input type="password" id="login-password" placeholder="请输入密码" required>
-                </div>
-                <button class="form-button" onclick="login()">登录</button>
+                <form onsubmit="login(); return false;">
+                    <div class="form-group">
+                        <label for="login-username">用户名</label>
+                        <input type="text" id="login-username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">密码</label>
+                        <input type="password" id="login-password" name="password" placeholder="请输入密码" required minlength="6">
+                    </div>
+                    <button class="form-button" type="submit">登录</button>
+                </form>
                 <p class="form-footer">没有账户？ <a href="#" onclick="toggleForms()">立即注册</a></p>
             </div>
 
             <div id="register-form" style="display:none;">
                 <h2>用户注册</h2>
-                <div class="form-group">
-                    <label for="register-username">用户名</label>
-                    <input type="text" id="register-username" placeholder="请输入用户名" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-password">密码</label>
-                    <input type="password" id="register-password" placeholder="请输入密码" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-email">邮箱</label>
-                    <input type="email" id="register-email" placeholder="请输入邮箱">
-                </div>
-                <button class="form-button" onclick="register()">注册</button>
+                <form onsubmit="register(); return false;">
+                    <div class="form-group">
+                        <label for="register-username">用户名</label>
+                        <input type="text" id="register-username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">密码</label>
+                        <input type="password" id="register-password" placeholder="请输入密码" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">邮箱</label>
+                        <input type="email" id="register-email" placeholder="请输入邮箱">
+                    </div>
+                    <button class="form-button" type="submit">注册</button>
+                </form>
                 <p class="form-footer">已有账户？ <a href="#" onclick="toggleForms()">立即登录</a></p>
             </div>
         </div>

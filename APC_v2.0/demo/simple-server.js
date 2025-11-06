@@ -8,9 +8,11 @@ const express = require('express');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const { Sequelize, DataTypes, Model } = require('sequelize');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
 // 初始化 Sequelize 实例（使用内存数据库用于演示）
-const sequelize = new Sequelize('sqlite::memory:', { 
+const sequelize = new Sequelize('sqlite::memory:', {
   logging: false,
   storage: ':memory:'
 });
@@ -19,8 +21,11 @@ const sequelize = new Sequelize('sqlite::memory:', {
 const GLM_API_KEY = '5176ce390ab84303aa7dae35d3be6f6a.JqWhdfhvZAhKIJCd';
 const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
 
+// 添加默认JWT密钥
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_key_for_development';
+
 // 定义 User 模型
-class User extends Model {}
+class User extends Model { }
 
 User.init({
   user_id: {
@@ -45,7 +50,7 @@ User.init({
 });
 
 // 定义 Consultation 模型（聊天记录）
-class Consultation extends Model {}
+class Consultation extends Model { }
 
 Consultation.init({
   consultation_id: {
@@ -102,104 +107,80 @@ app.use(express.static(path.join(__dirname)));
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
-    // 验证输入
     if (!username || !password) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Username and password are required' 
-      });
+      return res.status(400).json({ error: '用户名和密码不能为空' });
     }
-    
-    // 查询用户
+
     const user = await User.findOne({ where: { username } });
-    
     if (!user) {
-      return res.status(401).json({ 
-        success: false,
-        error: 'Invalid credentials' 
-      });
+      return res.status(401).json({ error: '无效的凭证' });
     }
-    
-    // 使用bcrypt比较密码
+
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        success: false,
-        error: 'Invalid credentials' 
-      });
+      return res.status(401).json({ error: '无效的凭证' });
     }
-    
-    // 模拟生成JWT令牌
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJUeXBlIjoicmVnaXN0ZXJlZCJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
-    res.json({ 
-      success: true,
+
+    const token = jwt.sign(
+      { userId: user.user_id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.json({
       token,
-      user: {
-        user_id: user.user_id,
-        username: user.username
-      },
-      message: 'Login successful'
+      user: _.omit(user.toJSON(), 'password_hash')
     });
+
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: 'Internal server error' 
-    });
+    res.status(500).json({ error: '登录时发生内部错误' });
   }
 });
 
-// 简化的注册API端点
-// 实际保存用户信息到数据库
+// 用户注册端点
 app.post('/api/auth/register', async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
-    const { username, password } = req.body;
-    
-    // 简单验证
+    const { username, password, email } = req.body;
+
     if (!username || !password || username.length < 3 || password.length < 6) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Invalid username or password. Username must be at least 3 characters and password at least 6 characters.'
-      });
+      await transaction.rollback();
+      return res.status(400).json({ error: '用户名至少3位，密码至少6位' });
     }
-    
-    // 检查用户是否已存在
-    const existingUser = await User.findOne({ where: { username } });
+
+    const existingUser = await User.findOne({
+      where: { username },
+      transaction
+    });
+
     if (existingUser) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Username already exists'
-      });
+      await transaction.rollback();
+      return res.status(400).json({ error: '用户名已存在' });
     }
-    
-    // 使用bcrypt哈希密码
+
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    
-    // 创建新用户
-    const newUser = await User.create({ 
-      username, 
-      password_hash: hashedPassword
-    });
-    
-    // 模拟生成JWT令牌
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInVzZXJUeXBlIjoicmVnaXN0ZXJlZCJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
-    res.json({ 
-      success: true,
+    const newUser = await User.create({
+      username,
+      password_hash: hashedPassword,
+      email: email || ''  // 添加邮箱字段支持
+    }, { transaction });
+
+    const token = jwt.sign({
+      userId: newUser.user_id,
+      username: newUser.username
+    }, JWT_SECRET, { expiresIn: '1h' });
+
+    await transaction.commit();
+    res.json({
       token,
-      user: {
-        user_id: newUser.user_id,
-        username: newUser.username
-      },
-      message: 'Registration successful'
+      user: _.omit(newUser.toJSON(), 'password_hash')
     });
+
   } catch (error) {
+    await transaction.rollback();
     console.error('Registration error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: 'Internal server error' 
-    });
+    res.status(500).json({ error: '注册失败' });
   }
 });
 
@@ -207,17 +188,17 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/consultations', async (req, res) => {
   try {
     const { user_query, consultation_type } = req.body;
-    
+
     let ai_response;
-    
+
     // 调用GLM模型
     try {
       // 心理咨询师系统提示词
       const systemPrompt = "你是一个专业的心理辅导师，你的任务是为用户提供心理支持和帮助。请以温和、理解和支持的态度回应用户的问题。";
-      
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
-      
+
       const response = await fetch(GLM_API_URL, {
         method: 'POST',
         headers: {
@@ -236,9 +217,9 @@ app.post('/api/consultations', async (req, res) => {
         }),
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.choices && data.choices.length > 0) {
@@ -263,9 +244,9 @@ app.post('/api/consultations', async (req, res) => {
         ai_response = getSimulatedResponse();
       }
     }
-    
+
     // 返回AI响应
-    res.json({ 
+    res.json({
       success: true,
       user_query,
       ai_response,
@@ -273,9 +254,9 @@ app.post('/api/consultations', async (req, res) => {
     });
   } catch (error) {
     console.error('Consultation error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Internal server error' 
+      error: 'Internal server error'
     });
   }
 });
@@ -289,15 +270,15 @@ function getSimulatedResponse() {
     "你的感受是完全可以理解的。很多人都会在类似情况下感到焦虑。",
     "感谢你愿意分享这些。让我们一起看看如何改善这种情况。"
   ];
-  
+
   return ai_responses[Math.floor(Math.random() * ai_responses.length)];
 }
 
 // 健康检查端点
 // 用于检查服务是否正常运行
 app.get('/health', (_req, res) => {
-  res.json({ 
-    ok: true, 
+  res.json({
+    ok: true,
     timestamp: new Date().toISOString(),
     service: 'AI Psychology Platform - Simple Server'
   });
@@ -308,8 +289,8 @@ app.get('/health', (_req, res) => {
 app.get('*', (req, res) => {
   // 如果请求的是API端点但未找到，返回404
   if (req.path.startsWith('/api/')) {
-    res.status(404).json({ 
-      error: 'API endpoint not found' 
+    res.status(404).json({
+      error: 'API endpoint not found'
     });
   } else {
     // 否则返回主页面，支持SPA应用
@@ -318,19 +299,37 @@ app.get('*', (req, res) => {
 });
 
 // 启动服务器
-const PORT = process.env.PORT || 3001; // 更改端口为3001避免冲突
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Visit http://localhost:${PORT} to access the application`);
+app.listen(PORT, async () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Visit http://localhost:${PORT} to access the application`);
+  
+  // 同步数据库
+  try {
+    await sequelize.sync();
+    console.log('Database synchronized');
     
-    // 显示当前使用的AI模型
-    const modelEnv = process.env.AI_MODEL_TYPE || 'mock';
-    console.log(`Current AI model: ${modelEnv}`);
-    
-    if (modelEnv === 'mock') {
-        console.log('Tip: Set AI_MODEL_TYPE=glm or AI_MODEL_TYPE=glm-4v to use real AI models');
+    // 创建一个测试用户以便测试
+    const testUser = await User.findOne({ where: { username: 'testuser' } });
+    if (!testUser) {
+      const hashedPassword = await bcrypt.hash('testpassword', SALT_ROUNDS);
+      await User.create({
+        username: 'testuser',
+        password_hash: hashedPassword,
+        email: 'test@example.com'
+      });
+      console.log('Test user created (username: testuser, password: testpassword)');
     }
+  } catch (error) {
+    console.error('Database sync error:', error);
+  }
+
+  // 显示当前使用的AI模型
+  const modelEnv = process.env.AI_MODEL_TYPE || 'mock';
+  console.log(`Current AI model: ${modelEnv}`);
+
+  if (modelEnv === 'mock') {
+    console.log('Tip: Set AI_MODEL_TYPE=glm or AI_MODEL_TYPE=glm-4v to use real AI models');
+  }
 });
 
 module.exports = app;
