@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人信息 - 心灵伴侣</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 导航栏 */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6a67ce;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #6a67ce;
+        }
+
+        .cta-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #5a57c5;
+        }
+
+        /* 主体内容 */
+        .main-content {
+            padding-top: 100px;
+            min-height: calc(100vh - 100px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            margin: 20px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-header h1 {
+            color: #6a67ce;
+            margin-bottom: 10px;
+        }
+
+        .profile-header p {
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #6a67ce;
+            outline: none;
+        }
+
+        .gender-options {
+            display: flex;
+            gap: 20px;
+        }
+
+        .gender-option {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .gender-option.selected {
+            border-color: #6a67ce;
+            background-color: #f0f0ff;
+        }
+
+        .gender-option input {
+            display: none;
+        }
+
+        .zodiac-display {
+            background: #f9f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 10px;
+            color: #6a67ce;
+            font-weight: 500;
+        }
+
+        .agreement {
+            display: flex;
+            align-items: flex-start;
+            margin: 25px 0;
+        }
+
+        .agreement input {
+            margin-top: 5px;
+            margin-right: 10px;
+        }
+
+        .agreement a {
+            color: #6a67ce;
+            text-decoration: none;
+        }
+
+        .agreement a:hover {
+            text-decoration: underline;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .confirm-button {
+            flex: 2;
+            padding: 15px;
+            background: #6a67ce;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .confirm-button:hover {
+            background: #5a57c5;
+        }
+
+        .skip-button {
+            flex: 1;
+            padding: 15px;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .skip-button:hover {
+            background: #e0e0e0;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: #e8f5e9;
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .message.error {
+            background: #ffebee;
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        /* 底部 */
+        footer {
+            background: #333;
+            color: white;
+            padding: 50px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 20px;
+            color: #6a67ce;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: #6a67ce;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #aaa;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .profile-container {
+                padding: 30px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">心灵伴侣</div>
+                <ul class="nav-links">
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="index.html#features">功能</a></li>
+                    <li><a href="index.html#testimonials">评价</a></li>
+                </ul>
+                <a href="index.html" class="cta-button">返回首页</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <div class="main-content">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1>完善个人信息</h1>
+                <p>填写以下信息，让我们更好地为您提供个性化服务</p>
+            </div>
+
+            <div class="message" id="message"></div>
+
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="nickname">昵称</label>
+                    <input type="text" id="nickname" placeholder="请输入您的昵称">
+                </div>
+
+                <div class="form-group">
+                    <label>性别</label>
+                    <div class="gender-options">
+                        <div class="gender-option" data-value="female">
+                            <input type="radio" name="gender" id="female" value="female">
+                            <label for="female">女生</label>
+                        </div>
+                        <div class="gender-option" data-value="male">
+                            <input type="radio" name="gender" id="male" value="male">
+                            <label for="male">男生</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="birthdate">出生年月</label>
+                    <input type="date" id="birthdate" placeholder="请选择您的出生日期">
+                    <div class="zodiac-display" id="zodiac-display" style="display: none;">
+                        您的星座：<span id="zodiac-name"></span>
+                    </div>
+                </div>
+
+                <div class="agreement">
+                    <input type="checkbox" id="agreement">
+                    <label for="agreement">我已阅读并同意《<a href="#">用户协议</a>》和《<a href="#">隐私协议</a>》</label>
+                </div>
+
+                <div class="buttons">
+                    <button class="confirm-button" type="submit">确认</button>
+                    <button class="skip-button" type="button" id="skip-button">跳过</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 底部 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>心灵伴侣</h3>
+                    <p>您的专属AI心理咨询师，24小时在线陪伴，保护隐私，专业支持。</p>
+                </div>
+                <div class="footer-column">
+                    <h3>功能</h3>
+                    <ul>
+                        <li><a href="#">AI心理聊天</a></li>
+                        <li><a href="#">情绪追踪</a></li>
+                        <li><a href="#">认知重构</a></li>
+                        <li><a href="#">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>资源</h3>
+                    <ul>
+                        <li><a href="#">心理测试</a></li>
+                        <li><a href="#">知识库</a></li>
+                        <li><a href="#">情绪追踪</a></li>
+                        <li><a href="#">心理测试</a></li>
+                        <li><a href="#">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>支持</h3>
+                    <ul>
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">隐私政策</a></li>
+                        <li><a href="#">服务条款</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 心灵伴侣. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取DOM元素
+            const genderOptions = document.querySelectorAll('.gender-option');
+            const birthdateInput = document.getElementById('birthdate');
+            const zodiacDisplay = document.getElementById('zodiac-display');
+            const zodiacName = document.getElementById('zodiac-name');
+            const profileForm = document.getElementById('profile-form');
+            const skipButton = document.getElementById('skip-button');
+            const messageEl = document.getElementById('message');
+            const agreementCheckbox = document.getElementById('agreement');
+
+            // 页面加载时填充已保存的用户信息
+            loadUserProfile();
+
+            // 性别选择
+            genderOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    // 移除所有选项的选中状态
+                    genderOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // 添加当前选项的选中状态
+                    this.classList.add('selected');
+                    
+                    // 选中对应的radio按钮
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                });
+            });
+
+            // 出生日期选择
+            birthdateInput.addEventListener('change', function () {
+                const birthdate = this.value;
+                if (birthdate) {
+                    const zodiac = getZodiacSign(birthdate);
+                    zodiacName.textContent = zodiac;
+                    zodiacDisplay.style.display = 'block';
+                } else {
+                    zodiacDisplay.style.display = 'none';
+                }
+            });
+
+            // 表单提交
+            profileForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                
+                // 检查是否同意协议
+                if (!agreementCheckbox.checked) {
+                    showMessage('请先阅读并同意用户协议和隐私协议', 'error');
+                    return;
+                }
+
+                // 获取表单数据
+                const nickname = document.getElementById('nickname').value;
+                const gender = document.querySelector('input[name="gender"]:checked')?.value;
+                const birthdate = document.getElementById('birthdate').value;
+
+                // 保存到localStorage
+                const profile = {
+                    nickname: nickname || '',
+                    gender: gender || '',
+                    birthdate: birthdate || '',
+                    zodiac: birthdate ? getZodiacSign(birthdate) : '',
+                    agreed: agreementCheckbox.checked,
+                    completed: true,
+                    updatedAt: new Date().toISOString()
+                };
+
+                try {
+                    localStorage.setItem('userProfile', JSON.stringify(profile));
+                    showMessage('个人信息保存成功！', 'success');
+                    
+                    // 隐藏跳过按钮
+                    if (skipButton) {
+                        skipButton.style.display = 'none';
+                    }
+                    
+                    // 延迟跳转到首页
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } catch (error) {
+                    console.error('保存个人信息失败:', error);
+                    showMessage('保存失败，请重试', 'error');
+                }
+            });
+
+            // 跳过按钮
+            if (skipButton) {
+                skipButton.addEventListener('click', function () {
+                    // 保存跳过状态
+                    const profile = {
+                        skipped: true,
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    try {
+                        localStorage.setItem('userProfile', JSON.stringify(profile));
+                        window.location.href = 'index.html';
+                    } catch (error) {
+                        console.error('保存跳过状态失败:', error);
+                        showMessage('操作失败，请重试', 'error');
+                    }
+                });
+            }
+
+            // 显示消息
+            function showMessage(text, type) {
+                messageEl.textContent = text;
+                messageEl.className = 'message ' + type;
+                messageEl.style.display = 'block';
+                
+                // 3秒后自动隐藏消息
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 3000);
+            }
+
+            // 根据出生日期计算星座
+            function getZodiacSign(birthdate) {
+                const dates = birthdate.split('-');
+                const month = parseInt(dates[1]);
+                const day = parseInt(dates[2]);
+
+                const zodiacSigns = [
+                    { name: "摩羯座", start: [12, 22], end: [1, 19] },
+                    { name: "水瓶座", start: [1, 20], end: [2, 18] },
+                    { name: "双鱼座", start: [2, 19], end: [3, 20] },
+                    { name: "白羊座", start: [3, 21], end: [4, 19] },
+                    { name: "金牛座", start: [4, 20], end: [5, 20] },
+                    { name: "双子座", start: [5, 21], end: [6, 21] },
+                    { name: "巨蟹座", start: [6, 22], end: [7, 22] },
+                    { name: "狮子座", start: [7, 23], end: [8, 22] },
+                    { name: "处女座", start: [8, 23], end: [9, 22] },
+                    { name: "天秤座", start: [9, 23], end: [10, 23] },
+                    { name: "天蝎座", start: [10, 24], end: [11, 22] },
+                    { name: "射手座", start: [11, 23], end: [12, 21] }
+                ];
+
+                for (const sign of zodiacSigns) {
+                    const [startMonth, startDay] = sign.start;
+                    const [endMonth, endDay] = sign.end;
+
+                    if ((month === startMonth && day >= startDay) || 
+                        (month === endMonth && day <= endDay)) {
+                        return sign.name;
+                    }
+                }
+
+                return "未知星座";
+            }
+
+            // 加载用户个人信息
+            function loadUserProfile() {
+                try {
+                    const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    
+                    // 如果用户已完成信息登记，隐藏跳过按钮
+                    if (userProfile.completed && skipButton) {
+                        skipButton.style.display = 'none';
+                    }
+                    
+                    if (userProfile.completed) {
+                        // 填充昵称
+                        if (userProfile.nickname) {
+                            document.getElementById('nickname').value = userProfile.nickname;
+                        }
+                        
+                        // 填充性别
+                        if (userProfile.gender) {
+                            const genderRadio = document.getElementById(userProfile.gender);
+                            if (genderRadio) {
+                                genderRadio.checked = true;
+                                // 更新性别选项的视觉状态
+                                genderOptions.forEach(option => {
+                                    if (option.dataset.value === userProfile.gender) {
+                                        option.classList.add('selected');
+                                    } else {
+                                        option.classList.remove('selected');
+                                    }
+                                });
+                            }
+                        }
+                        
+                        // 填充出生日期
+                        if (userProfile.birthdate) {
+                            document.getElementById('birthdate').value = userProfile.birthdate;
+                            
+                            // 显示星座
+                            if (userProfile.zodiac) {
+                                zodiacName.textContent = userProfile.zodiac;
+                                zodiacDisplay.style.display = 'block';
+                            }
+                        }
+                        
+                        // 检查协议
+                        if (userProfile.agreed) {
+                            agreementCheckbox.checked = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('加载用户个人信息失败:', error);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录/注册 - 心灵伴侣</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 导航栏 */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6a67ce;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #6a67ce;
+        }
+
+        .cta-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+            text-decoration: none;
+        }
+
+        .cta-button:hover {
+            background: #5a57c5;
+        }
+
+        /* 主体内容 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 100px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            margin: 20px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            color: #6a67ce;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: #666;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            color: #6a67ce;
+            border-bottom: 3px solid #6a67ce;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #6a67ce;
+            outline: none;
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 15px;
+            background: #6a67ce;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .form-button:hover {
+            background: #5a57c5;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .form-footer a {
+            color: #6a67ce;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: #e8f5e9;
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .message.error {
+            background: #ffebee;
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        /* 底部 */
+        footer {
+            background: #333;
+            color: white;
+            padding: 50px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 20px;
+            color: #6a67ce;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: #6a67ce;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #aaa;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .auth-container {
+                padding: 30px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">心灵伴侣</div>
+                <ul class="nav-links">
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="index.html#features">功能</a></li>
+                    <li><a href="index.html#testimonials">评价</a></li>
+                </ul>
+                <a href="index.html" class="cta-button">返回首页</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <div class="main-content">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>欢迎回来</h1>
+                <p>登录或注册以继续您的心理健康之旅</p>
+            </div>
+
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">登录</div>
+                <div class="auth-tab" data-tab="register">注册</div>
+            </div>
+
+            <div class="message" id="message"></div>
+
+            <!-- 登录表单 -->
+            <form class="auth-form active" id="login-form">
+                <div class="form-group">
+                    <label for="login-username">用户名</label>
+                    <input type="text" id="login-username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">密码</label>
+                    <input type="password" id="login-password" name="password" placeholder="请输入密码" required minlength="6">
+                </div>
+                <button class="form-button" type="submit">登录</button>
+                <div class="form-footer">
+                    <a href="#" id="forgot-password">忘记密码？</a>
+                </div>
+            </form>
+
+            <!-- 注册表单 -->
+            <form class="auth-form" id="register-form">
+                <div class="form-group">
+                    <label for="register-username">用户名</label>
+                    <input type="text" id="register-username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">密码</label>
+                    <input type="password" id="register-password" placeholder="请输入密码" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">邮箱</label>
+                    <input type="email" id="register-email" placeholder="请输入邮箱">
+                </div>
+                <button class="form-button" type="submit">注册</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 底部 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>心灵伴侣</h3>
+                    <p>您的专属AI心理咨询师，24小时在线陪伴，保护隐私，专业支持。</p>
+                </div>
+                <div class="footer-column">
+                    <h3>功能</h3>
+                    <ul>
+                        <li><a href="#">AI心理聊天</a></li>
+                        <li><a href="#">情绪追踪</a></li>
+                        <li><a href="#">认知重构</a></li>
+                        <li><a href="#">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>资源</h3>
+                    <ul>
+                        <li><a href="#">心理测试</a></li>
+                        <li><a href="#">知识库</a></li>
+                        <li><a href="#">情绪追踪</a></li>
+                        <li><a href="#">心理测试</a></li>
+                        <li><a href="#">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>支持</h3>
+                    <ul>
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">隐私政策</a></li>
+                        <li><a href="#">服务条款</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 心灵伴侣. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取DOM元素
+            const loginTab = document.querySelector('.auth-tab[data-tab="login"]');
+            const registerTab = document.querySelector('.auth-tab[data-tab="register"]');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const messageEl = document.getElementById('message');
+
+            // 切换标签页
+            loginTab.addEventListener('click', function () {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+                hideMessage();
+            });
+
+            registerTab.addEventListener('click', function () {
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+                registerForm.classList.add('active');
+                loginForm.classList.remove('active');
+                hideMessage();
+            });
+
+            // 登录表单提交
+            loginForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // 保存token到localStorage
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        
+                        showMessage('登录成功！正在跳转...', 'success');
+                        
+                        // 延迟跳转到聊天页面
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        showMessage(data.error || '登录失败', 'error');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showMessage('登录失败，请稍后重试', 'error');
+                }
+            });
+
+            // 注册表单提交
+            registerForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const username = document.getElementById('register-username').value;
+                const password = document.getElementById('register-password').value;
+                const email = document.getElementById('register-email').value;
+
+                try {
+                    const response = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password, email })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // 保存token到localStorage
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        
+                        showMessage('注册成功！正在跳转...', 'success');
+                        
+                        // 延迟跳转到聊天页面
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        showMessage(data.error || '注册失败', 'error');
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    showMessage('注册失败，请稍后重试', 'error');
+                }
+            });
+
+            // 忘记密码链接
+            document.getElementById('forgot-password').addEventListener('click', function (e) {
+                e.preventDefault();
+                showMessage('请联系管理员重置密码', 'error');
+            });
+
+            // 显示消息
+            function showMessage(text, type) {
+                messageEl.textContent = text;
+                messageEl.className = 'message ' + type;
+                messageEl.style.display = 'block';
+                
+                // 3秒后自动隐藏消息
+                setTimeout(hideMessage, 3000);
+            }
+
+            // 隐藏消息
+            function hideMessage() {
+                messageEl.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

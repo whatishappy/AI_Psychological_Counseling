@@ -5,6 +5,8 @@
 
 import express from 'express';
 import path from 'path';
+import bcrypt from 'bcryptjs';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { callAIModel, AIModelType } from './aiService';
 
 // 定义支持的AI模型类型（已从aiService导入，此处不再重复定义）
@@ -19,6 +21,46 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 // 提供静态文件服务，将上级目录作为静态资源根目录
 app.use(express.static(path.join(__dirname, '..')));
+
+// JWT配置
+interface AuthPayload {
+    userId: number | null; // null for guest
+    userType: 'guest' | 'registered' | 'admin';
+}
+
+const JWT_SECRET: Secret = process.env.JWT_SECRET || 'dev-secret';
+
+function signToken(payload: AuthPayload, expiresIn: SignOptions['expiresIn'] = '7d' as unknown as SignOptions['expiresIn']) {
+    const options: SignOptions = { expiresIn } as SignOptions;
+    return jwt.sign(payload as object, JWT_SECRET, options);
+}
+
+function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+    const header = req.headers.authorization;
+    if (!header) return res.status(401).json({ error: 'Unauthorized' });
+    const token = header.replace('Bearer ', '');
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET) as AuthPayload;
+        (req as any).auth = decoded;
+        next();
+    } catch {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+}
+
+// 模拟用户数据存储
+interface User {
+    user_id: number;
+    username: string;
+    password_hash: string;
+    email?: string;
+    user_type: 'registered' | 'admin';
+    last_login?: Date;
+}
+
+// 模拟数据库存储
+const users: User[] = [];
+let nextUserId = 1;
 
 // 健康检查端点
 // 用于检查服务是否正常运行
@@ -37,6 +79,84 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
+// 认证路由
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { username, password, email } = req.body;
+        
+        // 检查用户名是否已存在
+        const existing = users.find(u => u.username === username);
+        if (existing) {
+            return res.status(409).json({ error: 'Username exists' });
+        }
+        
+        // 检查邮箱是否已存在
+        if (email) {
+            const existingEmail = users.find(u => u.email === email);
+            if (existingEmail) {
+                return res.status(409).json({ error: 'Email already registered' });
+            }
+        }
+        
+        // 创建新用户
+        const password_hash = await bcrypt.hash(password, 10);
+        const user: User = {
+            user_id: nextUserId++,
+            username,
+            password_hash,
+            email,
+            user_type: 'registered'
+        };
+        users.push(user);
+        
+        // 生成token
+        const token = signToken({ userId: user.user_id, userType: 'registered' });
+        res.json({ token, user: { user_id: user.user_id, username, email } });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ error: 'Registration failed' });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        // 查找用户
+        const user = users.find(u => u.username === username);
+        if (!user) {
+            return res.status(401).json({ error: '用户名或密码错误' });
+        }
+        
+        // 验证密码
+        const ok = await bcrypt.compare(password, user.password_hash);
+        if (!ok) {
+            return res.status(401).json({ error: '用户名或密码错误' });
+        }
+        
+        // 更新最后登录时间
+        user.last_login = new Date();
+        
+        // 生成token
+        const token = signToken({ userId: user.user_id, userType: 'registered' });
+        res.json({ token });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: '登录失败' });
+    }
+});
+
+app.post('/api/auth/guest', async (req, res) => {
+    try {
+        // 生成游客token
+        const token = signToken({ userId: null, userType: 'guest' }, '1d');
+        res.json({ token });
+    } catch (error) {
+        console.error('Guest login error:', error);
+        res.status(500).json({ error: 'Guest login failed' });
+    }
+});
+
 // AI咨询会话端点
 interface ConsultationRequest {
   user_query: string;
@@ -50,7 +170,7 @@ interface ConsultationResponse {
   system_prompt?: string;
 }
 
-app.post('/api/consultations', async (req, res) => {
+app.post('/api/consultations', requireAuth, async (req, res) => {
   try {
     const { user_query, consultation_type }: ConsultationRequest = req.body;
     
@@ -65,10 +185,19 @@ app.post('/api/consultations', async (req, res) => {
     let modelType = AIModelType.MOCK;
     const modelEnv = process.env.AI_MODEL_TYPE;
     
+    console.log('环境变量检查:', { 
+      AI_MODEL_TYPE: process.env.AI_MODEL_TYPE,
+      ZHIPUAI_API_KEY: process.env.ZHIPUAI_API_KEY ? '已设置' : '未设置'
+    });
+    
     if (modelEnv === 'glm') {
       modelType = AIModelType.GLM;
+      console.log('使用GLM模型');
     } else if (modelEnv === 'glm-4v') {
       modelType = AIModelType.GLM_4V;
+      console.log('使用GLM-4V模型');
+    } else {
+      console.log('使用MOCK模型，因为AI_MODEL_TYPE设置为:', modelEnv);
     }
     
     // 调用AI模型获取回复
@@ -80,6 +209,11 @@ app.post('/api/consultations', async (req, res) => {
       model_used: aiResponse.model,
       system_prompt: '系统提示词已设置（不显示给用户）'
     };
+    
+    console.log('AI响应详情:', {
+      model_used: aiResponse.model,
+      response_preview: aiResponse.response.substring(0, 100) + '...'
+    });
     
     console.log('系统提示词已设置（不显示给用户）');
     
