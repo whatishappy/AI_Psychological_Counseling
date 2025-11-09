@@ -8,8 +8,7 @@ import path from 'path';
 import bcrypt from 'bcryptjs';
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { callAIModel, AIModelType } from './aiService';
-
-// 定义支持的AI模型类型（已从aiService导入，此处不再重复定义）
+import { User, sequelize } from './models'; // 导入User模型和sequelize实例
 
 // 创建Express应用实例
 const app = express();
@@ -48,19 +47,30 @@ function requireAuth(req: express.Request, res: express.Response, next: express.
     }
 }
 
-// 模拟用户数据存储
-interface User {
-    user_id: number;
-    username: string;
-    password_hash: string;
-    email?: string;
-    user_type: 'registered' | 'admin';
-    last_login?: Date;
-}
-
-// 模拟数据库存储
-const users: User[] = [];
-let nextUserId = 1;
+// 数据库初始化函数
+const initializeDatabase = async () => {
+  try {
+    console.log('开始数据库初始化...');
+    
+    // 测试数据库连接
+    await sequelize.authenticate();
+    console.log('数据库连接成功');
+    
+    // 同步所有模型，但不强制添加索引
+    await sequelize.sync({ alter: true });
+    console.log('数据库表结构同步完成');
+  } catch (error) {
+    console.error('数据库连接或同步失败:', error);
+    // 如果同步失败，尝试不带alter参数的同步
+    try {
+      await sequelize.sync();
+      console.log('数据库表结构同步完成（使用默认同步）');
+    } catch (syncError) {
+      console.error('数据库同步也失败了:', syncError);
+      throw syncError;
+    }
+  }
+};
 
 // 健康检查端点
 // 用于检查服务是否正常运行
@@ -82,17 +92,17 @@ app.use('/api', (req, res, next) => {
 // 认证路由
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { username, password, email } = req.body;
+        const { username, password, email, nickname, gender, birth_date } = req.body;
         
         // 检查用户名是否已存在
-        const existing = users.find(u => u.username === username);
+        const existing = await User.findOne({ where: { username } });
         if (existing) {
             return res.status(409).json({ error: 'Username exists' });
         }
         
         // 检查邮箱是否已存在
         if (email) {
-            const existingEmail = users.find(u => u.email === email);
+            const existingEmail = await User.findOne({ where: { email } });
             if (existingEmail) {
                 return res.status(409).json({ error: 'Email already registered' });
             }
@@ -100,18 +110,31 @@ app.post('/api/auth/register', async (req, res) => {
         
         // 创建新用户
         const password_hash = await bcrypt.hash(password, 10);
-        const user: User = {
-            user_id: nextUserId++,
+        const user = await User.create({
             username,
             password_hash,
             email,
+            nickname,
+            gender,
+            birth_date,
             user_type: 'registered'
-        };
-        users.push(user);
+        });
         
         // 生成token
         const token = signToken({ userId: user.user_id, userType: 'registered' });
-        res.json({ token, user: { user_id: user.user_id, username, email } });
+        res.json({ 
+            token, 
+            user: {
+                user_id: user.user_id,
+                username: user.username,
+                email: user.email,
+                nickname: user.nickname,
+                gender: user.gender,
+                birth_date: user.birth_date
+            },
+            // 添加协议同意状态
+            agreed_to_terms: user.agreed_to_terms || false
+        });
     } catch (error) {
         console.error('Registration error:', error);
         res.status(500).json({ error: 'Registration failed' });
@@ -123,7 +146,7 @@ app.post('/api/auth/login', async (req, res) => {
         const { username, password } = req.body;
         
         // 查找用户
-        const user = users.find(u => u.username === username);
+        const user = await User.findOne({ where: { username } });
         if (!user) {
             return res.status(401).json({ error: '用户名或密码错误' });
         }
@@ -135,25 +158,123 @@ app.post('/api/auth/login', async (req, res) => {
         }
         
         // 更新最后登录时间
-        user.last_login = new Date();
+        await user.update({ last_login: new Date() });
         
         // 生成token
         const token = signToken({ userId: user.user_id, userType: 'registered' });
-        res.json({ token });
+        res.json({ 
+            token, 
+            user: {
+                user_id: user.user_id,
+                username: user.username,
+                email: user.email,
+                nickname: user.nickname,
+                gender: user.gender,
+                birth_date: user.birth_date
+            },
+            // 添加协议同意状态
+            agreed_to_terms: user.agreed_to_terms || false
+        });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: '登录失败' });
     }
 });
 
-app.post('/api/auth/guest', async (req, res) => {
+// 获取用户个人信息
+app.get('/api/users/profile', requireAuth, async (req, res) => {
     try {
-        // 生成游客token
-        const token = signToken({ userId: null, userType: 'guest' }, '1d');
-        res.json({ token });
+        const auth = (req as any).auth as AuthPayload;
+        
+        // 检查用户是否为注册用户
+        if (auth.userId === null) {
+            return res.status(400).json({ error: '游客用户无个人资料' });
+        }
+        
+        const user = await User.findByPk(auth.userId);
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json({
+            user_id: user.user_id,
+            username: user.username,
+            email: user.email,
+            nickname: user.nickname,
+            gender: user.gender,
+            birth_date: user.birth_date,
+            agreed_to_terms: user.agreed_to_terms
+        });
     } catch (error) {
-        console.error('Guest login error:', error);
-        res.status(500).json({ error: 'Guest login failed' });
+        console.error('获取用户资料错误:', error);
+        res.status(500).json({ error: '获取用户资料失败' });
+    }
+});
+
+// 更新用户协议同意状态
+app.post('/api/users/agree-to-terms', requireAuth, async (req, res) => {
+    try {
+        const auth = (req as any).auth as AuthPayload;
+        
+        // 检查用户是否为注册用户
+        if (auth.userId === null) {
+            return res.status(400).json({ error: '游客用户无法同意协议' });
+        }
+        
+        const user = await User.findByPk(auth.userId);
+        
+        if (!user) {
+            return res.status(404).json({ error: '用户不存在' });
+        }
+        
+        // 更新协议同意状态
+        await user.update({ agreed_to_terms: true });
+        
+        res.json({ message: '协议同意状态更新成功' });
+    } catch (error) {
+        console.error('更新协议同意状态错误:', error);
+        res.status(500).json({ error: '更新协议同意状态失败' });
+    }
+});
+
+// 更新用户个人信息
+app.put('/api/users/profile', requireAuth, async (req, res) => {
+    try {
+        const auth = (req as any).auth as AuthPayload;
+        
+        // 检查用户是否为注册用户
+        if (auth.userId === null) {
+            return res.status(400).json({ error: '游客用户无法更新个人资料' });
+        }
+        
+        const { nickname, gender, birth_date, email } = req.body;
+        
+        const user = await User.findByPk(auth.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // 更新用户信息
+        await user.update({
+            nickname,
+            gender,
+            birth_date,
+            email
+        });
+        
+        res.json({
+            user_id: user.user_id,
+            username: user.username,
+            email: user.email,
+            nickname: user.nickname,
+            gender: user.gender,
+            birth_date: user.birth_date,
+            updated_at: user.updatedAt
+        });
+    } catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({ error: '更新个人信息失败' });
     }
 });
 
@@ -187,72 +308,43 @@ app.post('/api/consultations', requireAuth, async (req, res) => {
     
     console.log('环境变量检查:', { 
       AI_MODEL_TYPE: process.env.AI_MODEL_TYPE,
-      ZHIPUAI_API_KEY: process.env.ZHIPUAI_API_KEY ? '已设置' : '未设置'
+      GLM_API_KEY: process.env.GLM_API_KEY ? '[SET]' : '[NOT SET]',
+      GLM_API_BASE: process.env.GLM_API_BASE
     });
     
-    if (modelEnv === 'glm') {
-      modelType = AIModelType.GLM;
-      console.log('使用GLM模型');
-    } else if (modelEnv === 'glm-4v') {
-      modelType = AIModelType.GLM_4V;
-      console.log('使用GLM-4V模型');
-    } else {
-      console.log('使用MOCK模型，因为AI_MODEL_TYPE设置为:', modelEnv);
+    if (modelEnv === 'glm' || modelEnv === 'glm-4v') {
+      modelType = modelEnv === 'glm-4v' ? AIModelType.GLM_4V : AIModelType.GLM;
     }
     
-    // 调用AI模型获取回复
+    // 调用AI模型
     const aiResponse = await callAIModel(user_query, modelType);
     
-    const response: ConsultationResponse = {
-      consultation_id: 'sess-' + Date.now(),
+    // 返回AI响应
+    const consultationResponse: ConsultationResponse = {
       ai_response: aiResponse.response,
-      model_used: aiResponse.model,
-      system_prompt: '系统提示词已设置（不显示给用户）'
+      model_used: aiResponse.model
     };
     
-    console.log('AI响应详情:', {
-      model_used: aiResponse.model,
-      response_preview: aiResponse.response.substring(0, 100) + '...'
-    });
-    
-    console.log('系统提示词已设置（不显示给用户）');
-    
-    // 返回AI响应
-    res.json(response);
+    res.json(consultationResponse);
   } catch (error) {
-    console.error('AI咨询处理错误:', error);
-    res.status(500).json({ 
-      error: 'Internal server error while processing consultation' 
-    });
+    console.error('AI咨询错误:', error);
+    res.status(500).json({ error: 'AI服务暂时不可用' });
   }
 });
 
-// 所有其他GET请求都返回index.html
-// 支持前端路由（如Vue、React的Browser History模式）
-app.get('*', (req, res) => {
-  // 如果请求的是API端点但未找到，返回404
-  if (req.path.startsWith('/api/')) {
-    res.status(404).json({ 
-      error: 'API endpoint not found' 
-    });
-  } else {
-    // 否则返回主页面，支持SPA应用
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
-  }
-});
-
-// 启动服务器并监听指定端口
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
-  console.log(`📄 Visit http://localhost:${PORT} to access the application`);
-  console.log(`🔍 Health check: http://localhost:${PORT}/health`);
-  
-  // 显示当前使用的AI模型
-  const modelEnv = process.env.AI_MODEL_TYPE || 'mock';
-  console.log(`🤖 当前AI模型: ${modelEnv}`);
-  if (modelEnv === 'mock') {
+// 启动服务器前先初始化数据库
+initializeDatabase().then(() => {
+  // 启动服务器
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    console.log(`📄 Visit http://localhost:${PORT} to access the application`);
+    console.log(`🔍 Health check: http://localhost:${PORT}/health`);
+    console.log(`🤖 当前AI模型: ${process.env.AI_MODEL_TYPE || 'mock'}`);
     console.log('💡 提示: 设置环境变量 AI_MODEL_TYPE=glm 或 AI_MODEL_TYPE=glm-4v 来使用真实AI模型');
-  }
+  });
+}).catch(error => {
+  console.error('应用启动失败:', error);
+  process.exit(1);
 });
 
 // 导出应用实例，便于测试和复用

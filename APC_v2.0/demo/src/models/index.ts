@@ -1,38 +1,54 @@
-// 模拟数据库模型定义文件
-// 由于原始项目中没有提供模型定义，这里创建一个简单的模拟实现
-
 import { Sequelize, DataTypes, Model } from 'sequelize';
+import dotenv from 'dotenv';
 
-// 初始化 Sequelize 实例（使用内存数据库用于演示）
-export const sequelize = new Sequelize('sqlite::memory:', { logging: false });
+// 加载环境变量
+dotenv.config();
 
-// 定义 User 模型
-export class User extends Model {
-  public user_id!: number;
-  public username!: string;
-  public password_hash!: string;
-}
+// 数据库配置
+const dbName = process.env.DB_NAME || 'apc_db';
+const dbUser = process.env.DB_USER || 'root';
+const dbPassword = process.env.DB_PASSWORD || '';
+const dbHost = process.env.DB_HOST || 'localhost';
+const dbPort = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306; // 设置默认端口为3306
 
-User.init({
-  user_id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
+console.log('数据库配置信息:', { 
+  dbName, 
+  dbUser, 
+  dbHost, 
+  dbPort,
+  dbPassword: dbPassword ? '[HIDDEN]' : '[EMPTY]'
+}); // 添加调试信息
+
+// 初始化 Sequelize 实例（使用MySQL数据库）
+export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+  host: dbHost,
+  port: dbPort,
+  dialect: 'mysql',
+  logging: console.log, // 启用SQL日志以便调试
+  dialectOptions: {
+    multipleStatements: true
   },
-  username: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  password_hash: {
-    type: DataTypes.STRING,
-    allowNull: false
+  define: {
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_general_ci'
   }
-}, {
-  sequelize,
-  modelName: 'User',
-  tableName: 'users',
-  timestamps: false
 });
 
-// 初始化数据库
-sequelize.sync();
+// 导入 User 模型
+export * from './user';
+
+// 导出一个初始化函数，在应用启动时调用
+export const initDatabase = async () => {
+  try {
+    // 测试数据库连接
+    await sequelize.authenticate();
+    console.log('数据库连接成功');
+    
+    // 同步所有模型
+    await sequelize.sync({ alter: true });
+    console.log('数据库表结构同步完成');
+  } catch (error) {
+    console.error('数据库连接或同步失败:', error);
+    throw error;
+  }
+};

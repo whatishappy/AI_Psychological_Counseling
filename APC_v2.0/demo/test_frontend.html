@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>前端逻辑测试</title>
+</head>
+<body>
+    <h1>前端逻辑测试</h1>
+    <button onclick="testLogin()">测试登录</button>
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'testuser2',
+                        password: 'password123'
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <p>响应状态: ${response.status}</p>
+                    <p>agreed_to_terms 原始值: ${data.agreed_to_terms}</p>
+                    <p>agreed_to_terms 类型: ${typeof data.agreed_to_terms}</p>
+                    <p>!data.agreed_to_terms 结果: ${!data.agreed_to_terms}</p>
+                    <p>应该显示协议吗: ${!data.agreed_to_terms ? '是' : '否'}</p>
+                `;
+                
+                // 模拟前端存储
+                localStorage.setItem('agreed_to_terms', data.agreed_to_terms);
+                
+                // 模拟从localStorage读取
+                const storedValue = localStorage.getItem('agreed_to_terms');
+                document.getElementById('result').innerHTML += `
+                    <p>存储到localStorage的值: ${storedValue}</p>
+                    <p>从localStorage读取的值类型: ${typeof storedValue}</p>
+                    <p>从localStorage读取后!值的结果: ${!storedValue}</p>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `<p>错误: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

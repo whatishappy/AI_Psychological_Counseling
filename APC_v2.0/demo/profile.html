@@ -471,7 +471,7 @@
             });
 
             // 表单提交
-            profileForm.addEventListener('submit', function (e) {
+            profileForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 
                 // 检查是否同意协议
@@ -485,30 +485,62 @@
                 const gender = document.querySelector('input[name="gender"]:checked')?.value;
                 const birthdate = document.getElementById('birthdate').value;
 
-                // 保存到localStorage
-                const profile = {
-                    nickname: nickname || '',
-                    gender: gender || '',
-                    birthdate: birthdate || '',
-                    zodiac: birthdate ? getZodiacSign(birthdate) : '',
-                    agreed: agreementCheckbox.checked,
-                    completed: true,
-                    updatedAt: new Date().toISOString()
-                };
-
-                try {
-                    localStorage.setItem('userProfile', JSON.stringify(profile));
-                    showMessage('个人信息保存成功！', 'success');
-                    
-                    // 隐藏跳过按钮
-                    if (skipButton) {
-                        skipButton.style.display = 'none';
-                    }
-                    
-                    // 延迟跳转到首页
+                // 获取JWT token
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showMessage('请先登录', 'error');
+                    // 延迟跳转到登录页面
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 1500);
+                    return;
+                }
+
+                try {
+                    // 发送请求到服务器保存数据
+                    const response = await fetch('/api/users/profile', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            nickname: nickname || '',
+                            gender: gender || '',
+                            birth_date: birthdate || ''
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        showMessage('个人信息保存成功！', 'success');
+                        
+                        // 保存到localStorage表示已完成填写
+                        const profile = {
+                            nickname: nickname || '',
+                            gender: gender || '',
+                            birthdate: birthdate || '',
+                            zodiac: birthdate ? getZodiacSign(birthdate) : '',
+                            agreed: agreementCheckbox.checked,
+                            completed: true,
+                            updatedAt: new Date().toISOString()
+                        };
+                        
+                        localStorage.setItem('userProfile', JSON.stringify(profile));
+                        
+                        // 隐藏跳过按钮
+                        if (skipButton) {
+                            skipButton.style.display = 'none';
+                        }
+                        
+                        // 延迟跳转到首页
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        showMessage(data.error || '保存失败，请重试', 'error');
+                    }
                 } catch (error) {
                     console.error('保存个人信息失败:', error);
                     showMessage('保存失败，请重试', 'error');
@@ -517,7 +549,7 @@
 
             // 跳过按钮
             if (skipButton) {
-                skipButton.addEventListener('click', function () {
+                skipButton.addEventListener('click', async function () {
                     // 保存跳过状态
                     const profile = {
                         skipped: true,
@@ -526,6 +558,24 @@
                     
                     try {
                         localStorage.setItem('userProfile', JSON.stringify(profile));
+                        
+                        // 如果用户已登录，也发送一个空的更新请求到服务器
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            await fetch('/api/users/profile', {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                    nickname: '',
+                                    gender: '',
+                                    birth_date: ''
+                                })
+                            });
+                        }
+                        
                         window.location.href = 'index.html';
                     } catch (error) {
                         console.error('保存跳过状态失败:', error);
@@ -581,29 +631,84 @@
             }
 
             // 加载用户个人信息
-            function loadUserProfile() {
+            async function loadUserProfile() {
                 try {
-                    const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    // 首先尝试从localStorage加载
+                    const localProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
                     
                     // 如果用户已完成信息登记，隐藏跳过按钮
-                    if (userProfile.completed && skipButton) {
+                    if (localProfile.completed && skipButton) {
                         skipButton.style.display = 'none';
                     }
                     
-                    if (userProfile.completed) {
+                    // 获取JWT token
+                    const token = localStorage.getItem('token');
+                    if (token) {
+                        // 从服务器获取用户信息
+                        const response = await fetch('/api/users/profile', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            
+                            // 填充昵称
+                            if (data.nickname) {
+                                document.getElementById('nickname').value = data.nickname;
+                            }
+                            
+                            // 填充性别
+                            if (data.gender) {
+                                const genderRadio = document.getElementById(data.gender);
+                                if (genderRadio) {
+                                    genderRadio.checked = true;
+                                    // 更新性别选项的视觉状态
+                                    genderOptions.forEach(option => {
+                                        if (option.dataset.value === data.gender) {
+                                            option.classList.add('selected');
+                                        } else {
+                                            option.classList.remove('selected');
+                                        }
+                                    });
+                                }
+                            }
+                            
+                            // 填充出生日期
+                            if (data.birth_date) {
+                                document.getElementById('birthdate').value = data.birth_date;
+                                
+                                // 显示星座
+                                const zodiac = getZodiacSign(data.birth_date);
+                                zodiacName.textContent = zodiac;
+                                zodiacDisplay.style.display = 'block';
+                            }
+                            
+                            // 检查协议
+                            if (localProfile.agreed) {
+                                agreementCheckbox.checked = true;
+                            }
+                            return;
+                        }
+                    }
+                    
+                    // 如果从服务器获取失败，则使用localStorage中的数据
+                    if (localProfile.completed) {
                         // 填充昵称
-                        if (userProfile.nickname) {
-                            document.getElementById('nickname').value = userProfile.nickname;
+                        if (localProfile.nickname) {
+                            document.getElementById('nickname').value = localProfile.nickname;
                         }
                         
                         // 填充性别
-                        if (userProfile.gender) {
-                            const genderRadio = document.getElementById(userProfile.gender);
+                        if (localProfile.gender) {
+                            const genderRadio = document.getElementById(localProfile.gender);
                             if (genderRadio) {
                                 genderRadio.checked = true;
                                 // 更新性别选项的视觉状态
                                 genderOptions.forEach(option => {
-                                    if (option.dataset.value === userProfile.gender) {
+                                    if (option.dataset.value === localProfile.gender) {
                                         option.classList.add('selected');
                                     } else {
                                         option.classList.remove('selected');
@@ -613,18 +718,18 @@
                         }
                         
                         // 填充出生日期
-                        if (userProfile.birthdate) {
-                            document.getElementById('birthdate').value = userProfile.birthdate;
+                        if (localProfile.birthdate) {
+                            document.getElementById('birthdate').value = localProfile.birthdate;
                             
                             // 显示星座
-                            if (userProfile.zodiac) {
-                                zodiacName.textContent = userProfile.zodiac;
+                            if (localProfile.zodiac) {
+                                zodiacName.textContent = localProfile.zodiac;
                                 zodiacDisplay.style.display = 'block';
                             }
                         }
                         
                         // 检查协议
-                        if (userProfile.agreed) {
+                        if (localProfile.agreed) {
                             agreementCheckbox.checked = true;
                         }
                     }
