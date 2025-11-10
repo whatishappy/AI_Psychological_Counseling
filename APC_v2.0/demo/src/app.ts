@@ -37,12 +37,19 @@ function signToken(payload: AuthPayload, expiresIn: SignOptions['expiresIn'] = '
 function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
     const header = req.headers.authorization;
     if (!header) return res.status(401).json({ error: 'Unauthorized' });
-    const token = header.replace('Bearer ', '');
+    
+    // 正确处理Bearer token
+    let token = header;
+    if (header.startsWith('Bearer ')) {
+        token = header.substring(7); // 移除 'Bearer ' 前缀
+    }
+    
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as AuthPayload;
         (req as any).auth = decoded;
         next();
-    } catch {
+    } catch (error) {
+        console.error('Token verification error:', error);
         return res.status(401).json({ error: 'Invalid token' });
     }
 }

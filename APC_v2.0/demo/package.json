@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/package",
   "name": "ai-psychological-counseling-system",
   "version": "2.0.0",
   "description": "AI心理咨询服务系统 v2.0",

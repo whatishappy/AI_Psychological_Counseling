@@ -82,13 +82,14 @@ async function initDatabase() {
     console.log('\n3. 创建用户并授予权限...');
     try {
       // 对于MySQL 8.0+，使用新的权限语法
-      await connection.execute(`CREATE USER IF NOT EXISTS ?@? IDENTIFIED BY ?`, [DB_USER, DB_HOST, DB_PASSWORD]);
-      await connection.execute(`CREATE USER IF NOT EXISTS ?@'%' IDENTIFIED BY ?`, [DB_USER, DB_PASSWORD]);
+      // 修复SQL语法错误，不能对CREATE USER语句使用参数化查询
+      await connection.execute(`CREATE USER IF NOT EXISTS '${DB_USER}'@'${DB_HOST}' IDENTIFIED BY '${DB_PASSWORD}'`);
+      await connection.execute(`CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}'`);
       console.log('✓ 用户创建成功或已存在');
       
       // 授予权限
-      await connection.execute(`GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO ?@?`, [DB_USER, DB_HOST]);
-      await connection.execute(`GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO ?@'%'`, [DB_USER]);
+      await connection.execute(`GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'${DB_HOST}'`);
+      await connection.execute(`GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%'`);
       await connection.execute('FLUSH PRIVILEGES');
       console.log('✓ 权限授予成功');
     } catch (error) {

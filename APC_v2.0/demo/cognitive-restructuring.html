@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认知重构 - 心灵伴侣</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 导航栏 */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6a67ce;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #6a67ce;
+        }
+
+        .cta-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #5a57c5;
+        }
+
+        /* 用户信息按钮 */
+        .user-info {
+            display: none;
+            position: relative;
+        }
+
+        .user-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 200px;
+            display: none;
+            z-index: 1001;
+        }
+
+        .user-menu.show {
+            display: block;
+        }
+        
+        .user-menu p {
+            margin: 0 0 10px 0;
+            font-weight: 500;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .user-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 5px;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 5px;
+            transition: background 0.3s;
+        }
+        
+        .user-menu button:hover {
+            background: #e0e0e0;
+        }
+
+        /* 登录/注册按钮 */
+        .auth-button {
+            background: transparent;
+            color: #6a67ce;
+            border: 2px solid #6a67ce;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-left: 15px;
+        }
+
+        .auth-button:hover {
+            background: #f0f0ff;
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            padding: 120px 0 50px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* 认知重构介绍 */
+        .introduction {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .introduction h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .introduction p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        /* 重构步骤 */
+        .restructuring-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .step-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #6a67ce;
+            color: white;
+            border-radius: 50%;
+            line-height: 40px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .step-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .step-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 练习表单 */
+        .practice-form {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            min-height: 120px;
+        }
+
+        .form-group textarea:focus {
+            border-color: #6a67ce;
+            outline: none;
+        }
+
+        .submit-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .submit-button:hover {
+            background: #5a57c5;
+        }
+
+        /* 示例 */
+        .examples {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+        }
+
+        .examples h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .example-item {
+            margin-bottom: 30px;
+        }
+
+        .example-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .example-title {
+            font-weight: 500;
+            color: #6a67ce;
+            margin-bottom: 10px;
+        }
+
+        .example-content {
+            background: #f9f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* 底部 */
+        footer {
+            background: #333;
+            color: white;
+            padding: 50px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 20px;
+            color: #6a67ce;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: #6a67ce;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #aaa;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .introduction, .practice-form, .examples {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">心灵伴侣</div>
+                <ul class="nav-links">
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="index.html#features">功能</a></li>
+                    <li><a href="index.html#testimonials">用户评价</a></li>
+                    <li><a href="index.html#contact">联系我们</a></li>
+                </ul>
+                <div class="user-info" id="user-info">
+                    <button class="user-button" id="user-button">U</button>
+                    <div class="user-menu" id="user-menu">
+                        <p>用户菜单</p>
+                        <div id="user-profile-info">
+                            <p>用户名: <span id="user-name"></span></p>
+                            <p>昵称: <span id="profile-nickname"></span></p>
+                            <p>性别:<span id="profile-gender"></span><span id="profile-zodiac"></span></p>
+                        </div>
+                        <button id="profile-btn">个人信息</button>
+                        <button id="logout-btn">退出登录</button>
+                    </div>
+                </div>
+                <button class="auth-button" id="auth-button" style="display: none;">登录/注册</button>
+                <button class="cta-button" onclick="goToChat()">开始聊天</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <section class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>认知重构</h1>
+                <p>识别并改变负面思维模式，培养更积极健康的心理习惯</p>
+            </div>
+
+            <!-- 认知重构介绍 -->
+            <div class="introduction">
+                <h2>什么是认知重构？</h2>
+                <p>认知重构是认知行为疗法(CBT)中的核心技术之一，它帮助我们识别、质疑和改变那些不准确或有害的思维模式。通过认知重构，我们可以学会用更平衡、现实的方式来看待自己、他人和世界。</p>
+                <p>负面思维模式常常是自动出现的，我们称之为"自动思维"。这些思维可能夸大了消极方面，忽略了积极因素，或者过于绝对化。认知重构帮助我们识别这些思维陷阱，并用更客观、平衡的想法来替代它们。</p>
+            </div>
+
+            <!-- 重构步骤 -->
+            <div class="restructuring-steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>识别自动思维</h3>
+                    <p>学会识别在特定情境下自动出现的负面想法。这些想法往往是情绪反应的第一反应。</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>评估思维准确性</h3>
+                    <p>质疑这些想法的真实性。寻找支持和反对这些想法的证据。</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>寻找替代思维</h3>
+                    <p>基于证据，发展出更平衡、现实的想法来替代原来的负面思维。</p>
+                </div>
+            </div>
+
+            <!-- 练习表单 -->
+            <div class="practice-form">
+                <h2>认知重构练习</h2>
+                <form id="restructuring-form">
+                    <div class="form-group">
+                        <label for="situation">情境描述:</label>
+                        <textarea id="situation" name="situation" placeholder="描述引发负面情绪的具体情境..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="automatic-thoughts">自动思维:</label>
+                        <textarea id="automatic-thoughts" name="automatic-thoughts" placeholder="写下在该情境下脑海中自动出现的想法..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emotions">相关情绪:</label>
+                        <textarea id="emotions" name="emotions" placeholder="描述这些想法引发的情绪及其强度(0-100%)..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="evidence-for">支持想法的证据:</label>
+                        <textarea id="evidence-for" name="evidence-for" placeholder="列出支持这些想法的事实..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="evidence-against">反对想法的证据:</label>
+                        <textarea id="evidence-against" name="evidence-against" placeholder="列出反对这些想法的事实..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="alternative-thoughts">替代思维:</label>
+                        <textarea id="alternative-thoughts" name="alternative-thoughts" placeholder="基于证据，写出更平衡、现实的想法..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-emotions">重构后的情绪:</label>
+                        <textarea id="new-emotions" name="new-emotions" placeholder="重新评估这些新想法引发的情绪及其强度..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-button">保存练习</button>
+                </form>
+            </div>
+
+            <!-- 示例 -->
+            <div class="examples">
+                <h2>示例</h2>
+                <div class="example-item">
+                    <div class="example-title">情境：</div>
+                    <div class="example-content">在会议上提出建议，但被领导否决了。</div>
+                    
+                    <div class="example-title">自动思维：</div>
+                    <div class="example-content">"我总是把事情搞砸。我根本不适合这份工作。"</div>
+                    
+                    <div class="example-title">支持证据：</div>
+                    <div class="example-content">这次建议确实被否决了。</div>
+                    
+                    <div class="example-title">反对证据：</div>
+                    <div class="example-content">之前也有建议被采纳过；同事们经常寻求我的意见；年度评估结果良好。</div>
+                    
+                    <div class="example-title">替代思维：</div>
+                    <div class="example-content">"这次建议没有被采纳，但这并不意味着我能力不足。每个人都有被否决的时候，我可以从这次经历中学到东西，改进我的建议。"</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 底部 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>心灵伴侣</h3>
+                    <p>您的专属AI心理咨询师，24小时在线陪伴，保护隐私，专业支持。</p>
+                </div>
+                <div class="footer-column">
+                    <h3>功能</h3>
+                    <ul>
+                        <li><a href="#">AI心理聊天</a></li>
+                        <li><a href="#">情绪追踪</a></li>
+                        <li><a href="#">认知重构</a></li>
+                        <li><a href="#">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>资源</h3>
+                    <ul>
+                        <li><a href="#">心理测试</a></li>
+                        <li><a href="#">知识库</a></li>
+                        <li><a href="#">情绪追踪</a></li>
+                        <li><a href="#">心理测试</a></li>
+                        <li><a href="#">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>支持</h3>
+                    <ul>
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">隐私政策</a></li>
+                        <li><a href="#">服务条款</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 心灵伴侣. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 表单提交处理
+            const restructuringForm = document.getElementById('restructuring-form');
+            if (restructuringForm) {
+                restructuringForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // 获取表单数据
+                    const situation = document.getElementById('situation').value;
+                    const automaticThoughts = document.getElementById('automatic-thoughts').value;
+                    const emotions = document.getElementById('emotions').value;
+                    const evidenceFor = document.getElementById('evidence-for').value;
+                    const evidenceAgainst = document.getElementById('evidence-against').value;
+                    const alternativeThoughts = document.getElementById('alternative-thoughts').value;
+                    const newEmotions = document.getElementById('new-emotions').value;
+                    
+                    // 这里应该将数据发送到服务器
+                    console.log('提交认知重构数据:', { 
+                        situation, 
+                        automaticThoughts, 
+                        emotions, 
+                        evidenceFor, 
+                        evidenceAgainst, 
+                        alternativeThoughts, 
+                        newEmotions 
+                    });
+                    
+                    alert('认知重构练习已保存！');
+                    
+                    // 重置表单
+                    restructuringForm.reset();
+                });
+            }
+            
+            // 检查用户登录状态
+            checkUserStatus();
+        });
+        
+        // 检查用户状态并更新UI
+        function checkUserStatus() {
+            try {
+                const token = localStorage.getItem('token');
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                
+                const userInfo = document.getElementById('user-info');
+                const authButton = document.getElementById('auth-button');
+                const userName = document.getElementById('user-name');
+                const userButton = document.getElementById('user-button');
+                const profileNickname = document.getElementById('profile-nickname');
+                const profileGender = document.getElementById('profile-gender');
+                const profileZodiac = document.getElementById('profile-zodiac');
+                
+                if (token && user) {
+                    // 用户已登录
+                    if (userInfo) userInfo.style.display = 'block';
+                    if (authButton) authButton.style.display = 'none';
+                    if (userName) userName.textContent = user.username;
+                    
+                    // 设置用户按钮显示首字母
+                    if (userButton) {
+                        userButton.textContent = user.username.charAt(0).toUpperCase();
+                    }
+                    
+                    // 显示用户个人信息
+                    if (profileNickname) {
+                        profileNickname.textContent = userProfile.nickname || '';
+                    }
+                    
+                    if (profileGender) {
+                        const genderText = userProfile.gender === 'female' ? '女' : 
+                                         userProfile.gender === 'male' ? '男' : '';
+                        profileGender.textContent = genderText ? ` ${genderText}` : '';
+                    }
+                    
+                    if (profileZodiac) {
+                        profileZodiac.textContent = userProfile.zodiac ? ` ${userProfile.zodiac}` : '';
+                    }
+                } else {
+                    // 用户未登录
+                    if (userInfo) userInfo.style.display = 'none';
+                    if (authButton) authButton.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error checking user status:', error);
+            }
+        }
+        
+        // 绑定用户菜单事件
+        function bindUserMenuEvents() {
+            try {
+                const userButton = document.getElementById('user-button');
+                const userMenu = document.getElementById('user-menu');
+                const logoutBtn = document.getElementById('logout-btn');
+                const profileBtn = document.getElementById('profile-btn');
+                
+                if (userButton) {
+                    userButton.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (userMenu) {
+                            userMenu.classList.toggle('show');
+                        }
+                    });
+                }
+                
+                if (profileBtn) {
+                    profileBtn.addEventListener('click', function() {
+                        window.location.href = 'profile.html';
+                    });
+                }
+                
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function() {
+                        // 清除用户信息
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('userProfile');
+                        
+                        // 隐藏用户菜单
+                        if (userMenu) userMenu.classList.remove('show');
+                        
+                        // 隐藏用户信息按钮，显示登录按钮
+                        const userInfo = document.getElementById('user-info');
+                        const authButton = document.getElementById('auth-button');
+                        const userButton = document.getElementById('user-button');
+                        if (userInfo) userInfo.style.display = 'none';
+                        if (authButton) authButton.style.display = 'block';
+                        if (userButton) userButton.textContent = 'U'; // 重置为默认值
+                        
+                        alert('已成功登出');
+                    });
+                }
+                
+                // 点击页面其他地方隐藏菜单
+                document.addEventListener('click', function(e) {
+                    if (userMenu && !userMenu.contains(e.target) && userButton !== e.target) {
+                        userMenu.classList.remove('show');
+                    }
+                });
+            } catch (error) {
+                console.error('Error binding user menu events:', error);
+            }
+        }
+        
+        // 跳转到聊天功能
+        function goToChat() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    // 已登录用户跳转到首页的聊天界面
+                    window.location.href = 'index.html#chat';
+                } else {
+                    // 未登录用户显示登录模态框
+                    alert('请先登录');
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error('Error in goToChat:', error);
+            }
+        }
+    </script>
+</body>
+</html>

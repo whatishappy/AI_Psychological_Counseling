@@ -67,6 +67,48 @@
             color: #6a67ce;
         }
 
+        /* 功能下拉菜单 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 10px;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 0;
+        }
+
+        .dropdown-content a {
+            color: #555;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+            color: #6a67ce;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            color: #6a67ce;
+        }
+
         .cta-button {
             background: #6a67ce;
             color: white;
@@ -707,23 +749,30 @@
             <nav>
                 <div class="logo">心灵伴侣</div>
                 <ul class="nav-links">
-                    <li><a href="#features">功能</a></li>
                     <li><a href="#testimonials">评价</a></li>
                     <li><a href="#contact">联系</a></li>
                 </ul>
                 <div class="user-info" id="user-info">
                     <button class="user-button" id="user-button">U</button>
                     <div class="user-menu" id="user-menu">
-                        <p id="user-name">用户</p>
-                        <div class="user-profile-info" id="user-profile-info" style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: none;">
-                            <p style="margin: 0; font-size: 14px; color: #666;">
-                                <span id="profile-nickname"></span>
-                                <span id="profile-gender"></span>
-                                <span id="profile-zodiac"></span>
-                            </p>
+                        <p>用户菜单</p>
+                        <div id="user-profile-info">
+                            <p>用户名: <span id="user-name"></span></p>
+                            <p>昵称: <span id="profile-nickname"></span></p>
+                            <p>性别:<span id="profile-gender"></span><span id="profile-zodiac"></span></p>
                         </div>
                         <button id="profile-btn">个人信息</button>
                         <button id="logout-btn">退出登录</button>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="dropbtn">功能</a>
+                    <div class="dropdown-content">
+                        <a href="emotion-tracking.html">情绪追踪</a>
+                        <a href="cognitive-restructuring.html">认知重构</a>
+                        <a href="meditation.html">冥想练习</a>
+                        <a href="psychological-tests.html">心理测试</a>
+                        <a href="knowledge-base.html">知识库</a>
                     </div>
                 </div>
                 <button class="auth-button" id="auth-button" onclick="showAuthModal()" style="display: none;">登录/注册</button>
@@ -906,58 +955,6 @@
                     <button class="form-button" type="submit">注册</button>
                 </form>
                 <p class="form-footer">已有账户？ <a href="#" onclick="toggleForms()">立即登录</a></p>
-            </div>
-        </div>
-    </div>
-    
-    <div id="terms-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>用户协议和隐私协议</h2>
-            </div>
-            <div class="modal-body">
-                <div class="terms-content">
-                    <h3>用户协议</h3>
-                    <p>欢迎使用心灵伴侣AI心理咨询服务系统。在使用本服务前，请仔细阅读以下条款：</p>
-                    
-                    <h4>1. 服务说明</h4>
-                    <p>本系统提供基于人工智能的心理咨询服务，旨在为用户提供心理健康支持和建议。请注意，AI咨询不能替代专业医生的诊断和治疗。</p>
-                    
-                    <h4>2. 使用规范</h4>
-                    <p>用户在使用本服务时，应遵守相关法律法规，不得发布违法、有害、不实或侵犯他人权益的信息。</p>
-                    
-                    <h4>3. 免责声明</h4>
-                    <p>本系统提供的服务仅供参考，不构成医疗建议。如遇紧急情况，请及时联系专业医疗机构。</p>
-                    
-                    <h4>4. 知识产权</h4>
-                    <p>本系统的软件、界面、文档等知识产权归开发者所有，用户仅可按照授权范围使用。</p>
-                    
-                    <h3>隐私协议</h3>
-                    <p>我们非常重视您的隐私保护，特此说明我们如何收集、使用和保护您的个人信息：</p>
-                    
-                    <h4>1. 信息收集</h4>
-                    <p>我们收集您在注册和使用过程中提供的必要信息，包括但不限于用户名、邮箱、个人资料等。</p>
-                    
-                    <h4>2. 信息使用</h4>
-                    <p>收集的信息将用于提供服务、改善用户体验和系统安全防护。</p>
-                    
-                    <h4>3. 信息安全</h4>
-                    <p>我们采用加密等技术措施保护您的信息安全，防止信息泄露、损毁或丢失。</p>
-                    
-                    <h4>4. 信息共享</h4>
-                    <p>未经您同意，我们不会向第三方共享您的个人信息，法律法规另有规定的除外。</p>
-                </div>
-                
-                <div class="terms-agreement">
-                    <label>
-                        <input type="checkbox" id="agree-terms" required> 
-                        我已阅读并同意《<a href="#" onclick="showUserAgreement()">用户协议</a>》和《<a href="#" onclick="showPrivacyAgreement()">隐私协议</a>》
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="accept-terms" class="btn-primary" onclick="acceptTerms()">同意并继续</button>
-                <button class="btn-secondary" onclick="declineTerms()">拒绝并退出</button>
             </div>
         </div>
     </div>
@@ -1285,9 +1282,6 @@
                             userId: data.user?.id
                         }));
                         
-                        // 保存协议同意状态
-                        localStorage.setItem('agreed_to_terms', data.agreed_to_terms ? 'true' : 'false');
-                        
                         // 隐藏模态框
                         hideAuthModal();
                         
@@ -1306,15 +1300,6 @@
                         
                         // 重新绑定用户菜单事件
                         bindUserMenuEvents();
-                        
-                        // 检查用户是否已同意协议
-                        if (!data.agreed_to_terms) {
-                            // 用户未同意协议，显示协议同意界面
-                            setTimeout(() => {
-                                showTermsAgreement();
-                            }, 100);
-                            return;
-                        }
                         
                         // 检查用户是否需要完善个人信息
                         const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
@@ -1498,14 +1483,6 @@
                         chatSection.style.display = 'block';
                     }
                     
-                    // 检查协议同意状态
-                    const agreedToTerms = localStorage.getItem('agreed_to_terms');
-                    if (agreedToTerms !== 'true') {
-                        // 用户未同意协议，显示协议同意界面
-                        setTimeout(() => {
-                            showTermsAgreement();
-                        }, 100);
-                    }
                 } else {
                     // 用户未登录
                     if (userInfo) userInfo.style.display = 'none';
@@ -1669,115 +1646,6 @@
         window.addEventListener('error', function(e) {
             console.error('Global error:', e.error);
         });
-        
-        // 显示协议同意界面
-        function showTermsAgreement() {
-            try {
-                const modal = document.getElementById('terms-modal');
-                if (modal) {
-                    modal.style.display = 'flex';
-                } else {
-                    console.error('Terms modal not found');
-                }
-            } catch (error) {
-                console.error('Error in showTermsAgreement:', error);
-            }
-        }
-        
-        // 隐藏协议同意界面
-        function hideTermsAgreement() {
-            try {
-                const modal = document.getElementById('terms-modal');
-                if (modal) {
-                    modal.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error in hideTermsAgreement:', error);
-            }
-        }
-        
-        // 同意协议
-        async function acceptTerms() {
-            try {
-                const agreeCheckbox = document.getElementById('agree-terms');
-                if (!agreeCheckbox || !agreeCheckbox.checked) {
-                    alert('请先同意用户协议和隐私协议');
-                    return;
-                }
-                
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    alert('用户未登录');
-                    return;
-                }
-                
-                try {
-                    const response = await fetch('/api/users/agree-to-terms', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        // 确保成功更新本地存储的协议状态
-                        try {
-                            localStorage.setItem('agreed_to_terms', 'true');
-                            console.log('协议同意状态已更新至 localStorage');
-                        } catch (error) {
-                            console.error('无法更新 localStorage:', error);
-                            alert('本地存储更新失败，请检查浏览器设置');
-                            return;
-                        }
-                        
-                        // 隐藏协议模态框
-                        hideTermsAgreement();
-                        
-                        // 跳转到个人信息页面
-                        setTimeout(() => {
-                            window.location.href = 'profile.html';
-                        }, 100);
-                    } else {
-                        const data = await response.json();
-                        alert(data.error || '更新协议状态失败');
-                    }
-                } catch (error) {
-                    console.error('Accept terms error:', error);
-                    alert('同意协议时发生错误，请稍后重试');
-                }
-            } catch (error) {
-                console.error('Error in acceptTerms function:', error);
-            }
-        }
-        
-        // 拒绝协议
-        function declineTerms() {
-            try {
-                // 清除登录信息
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                localStorage.removeItem('agreed_to_terms');
-                
-                // 隐藏协议模态框
-                hideTermsAgreement();
-                
-                // 刷新页面回到未登录状态
-                window.location.reload();
-            } catch (error) {
-                console.error('Error in declineTerms function:', error);
-            }
-        }
-        
-        // 显示用户协议详情
-        function showUserAgreement() {
-            alert('用户协议详情内容（此处可链接到完整协议页面）');
-        }
-        
-        // 显示隐私协议详情
-        function showPrivacyAgreement() {
-            alert('隐私协议详情内容（此处可链接到完整协议页面）');
-        }
     </script>
 </body>
 

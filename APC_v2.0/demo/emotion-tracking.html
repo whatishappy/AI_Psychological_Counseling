@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情绪追踪 - 心灵伴侣</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 导航栏 */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6a67ce;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #6a67ce;
+        }
+
+        .cta-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #5a57c5;
+        }
+
+        /* 用户信息按钮 */
+        .user-info {
+            display: none;
+            position: relative;
+        }
+
+        .user-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 200px;
+            display: none;
+            z-index: 1001;
+        }
+
+        .user-menu.show {
+            display: block;
+        }
+        
+        .user-menu p {
+            margin: 0 0 10px 0;
+            font-weight: 500;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .user-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 5px;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 5px;
+            transition: background 0.3s;
+        }
+        
+        .user-menu button:hover {
+            background: #e0e0e0;
+        }
+
+        /* 登录/注册按钮 */
+        .auth-button {
+            background: transparent;
+            color: #6a67ce;
+            border: 2px solid #6a67ce;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-left: 15px;
+        }
+
+        .auth-button:hover {
+            background: #f0f0ff;
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            padding: 120px 0 50px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* 情绪追踪表单 */
+        .tracking-form {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            border-color: #6a67ce;
+            outline: none;
+        }
+
+        .mood-selector {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .mood-option {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 20px 10px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mood-option:hover {
+            border-color: #6a67ce;
+            background: #f9f9ff;
+        }
+
+        .mood-option.selected {
+            border-color: #6a67ce;
+            background: #f0f0ff;
+            transform: translateY(-5px);
+        }
+
+        .mood-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .submit-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .submit-button:hover {
+            background: #5a57c5;
+        }
+
+        /* 情绪图表 */
+        .tracking-chart {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .chart-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .chart-header h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        /* 历史记录 */
+        .history-records {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+        }
+
+        .history-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .history-header h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .records-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-date {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .record-mood {
+            font-size: 1.5rem;
+        }
+
+        /* 底部 */
+        footer {
+            background: #333;
+            color: white;
+            padding: 50px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 20px;
+            color: #6a67ce;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: #6a67ce;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #aaa;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .tracking-form, .tracking-chart, .history-records {
+                padding: 20px;
+            }
+            
+            .mood-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">心灵伴侣</div>
+                <ul class="nav-links">
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="index.html#features">功能</a></li>
+                    <li><a href="index.html#testimonials">用户评价</a></li>
+                    <li><a href="index.html#contact">联系我们</a></li>
+                </ul>
+                <div class="user-info" id="user-info">
+                    <button class="user-button" id="user-button">U</button>
+                    <div class="user-menu" id="user-menu">
+                        <p>用户菜单</p>
+                        <div id="user-profile-info">
+                            <p>用户名: <span id="user-name"></span></p>
+                            <p>昵称: <span id="profile-nickname"></span></p>
+                            <p>性别:<span id="profile-gender"></span><span id="profile-zodiac"></span></p>
+                        </div>
+                        <button id="profile-btn">个人信息</button>
+                        <button id="logout-btn">退出登录</button>
+                    </div>
+                </div>
+                <button class="auth-button" id="auth-button" style="display: none;">登录/注册</button>
+                <button class="cta-button" onclick="goToChat()">开始聊天</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <section class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>情绪追踪</h1>
+                <p>记录和分析您的情绪变化，更好地了解自己的心理状态</p>
+            </div>
+
+            <!-- 情绪追踪表单 -->
+            <div class="tracking-form">
+                <h2>记录今日情绪</h2>
+                <form id="mood-form">
+                    <div class="form-group">
+                        <label>选择您的当前情绪:</label>
+                        <div class="mood-selector">
+                            <div class="mood-option" data-mood="5">
+                                <div class="mood-icon">😄</div>
+                                <div>非常开心</div>
+                            </div>
+                            <div class="mood-option" data-mood="4">
+                                <div class="mood-icon">😊</div>
+                                <div>开心</div>
+                            </div>
+                            <div class="mood-option" data-mood="3">
+                                <div class="mood-icon">😐</div>
+                                <div>一般</div>
+                            </div>
+                            <div class="mood-option" data-mood="2">
+                                <div class="mood-icon">😔</div>
+                                <div>难过</div>
+                            </div>
+                            <div class="mood-option" data-mood="1">
+                                <div class="mood-icon">😢</div>
+                                <div>非常难过</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="mood-value" name="mood" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mood-description">情绪描述:</label>
+                        <textarea id="mood-description" name="description" rows="4" placeholder="描述一下您今天的情绪，可能的原因或相关事件..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mood-tags">情绪标签:</label>
+                        <input type="text" id="mood-tags" name="tags" placeholder="工作,人际关系,健康... (用逗号分隔)">
+                    </div>
+
+                    <button type="submit" class="submit-button">记录情绪</button>
+                </form>
+            </div>
+
+            <!-- 情绪图表 -->
+            <div class="tracking-chart">
+                <div class="chart-header">
+                    <h2>情绪趋势图</h2>
+                    <p>过去7天的情绪变化</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="moodChart"></canvas>
+                    <!-- 这里将使用Chart.js或其他图表库来显示情绪趋势 -->
+                    <div style="text-align: center; padding-top: 150px; color: #999;">
+                        <p>情绪图表将在此处显示</p>
+                        <p>登录后可查看您的情绪追踪数据</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 历史记录 -->
+            <div class="history-records">
+                <div class="history-header">
+                    <h2>情绪历史记录</h2>
+                    <p>您的近期情绪记录</p>
+                </div>
+                <div class="records-list">
+                    <div class="record-item">
+                        <div class="record-date">2025-11-09 20:30</div>
+                        <div class="record-mood">😊</div>
+                        <div class="record-description">工作顺利完成，感到轻松</div>
+                    </div>
+                    <div class="record-item">
+                        <div class="record-date">2025-11-09 12:15</div>
+                        <div class="record-mood">😐</div>
+                        <div class="record-description">午餐时间，情绪平稳</div>
+                    </div>
+                    <div class="record-item">
+                        <div class="record-date">2025-11-08 18:45</div>
+                        <div class="record-mood">😄</div>
+                        <div class="record-description">和朋友聚会很开心</div>
+                    </div>
+                    <div class="record-item">
+                        <div class="record-date">2025-11-08 09:30</div>
+                        <div class="record-mood">😔</div>
+                        <div class="record-description">早晨起床感觉有些焦虑</div>
+                    </div>
+                    <div class="record-item">
+                        <div class="record-date">2025-11-07 21:00</div>
+                        <div class="record-mood">😊</div>
+                        <div class="record-description">看完一本好书，心情愉悦</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 底部 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>心灵伴侣</h3>
+                    <p>您的专属AI心理咨询师，24小时在线陪伴，保护隐私，专业支持。</p>
+                </div>
+                <div class="footer-column">
+                    <h3>功能</h3>
+                    <ul>
+                        <li><a href="#">AI心理聊天</a></li>
+                        <li><a href="#">情绪追踪</a></li>
+                        <li><a href="#">认知重构</a></li>
+                        <li><a href="#">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>资源</h3>
+                    <ul>
+                        <li><a href="#">心理测试</a></li>
+                        <li><a href="#">知识库</a></li>
+                        <li><a href="#">情绪追踪</a></li>
+                        <li><a href="#">心理测试</a></li>
+                        <li><a href="#">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>支持</h3>
+                    <ul>
+                        <li><a href="#">帮助中心</a></li>
+                        <li><a href="#">隐私政策</a></li>
+                        <li><a href="#">服务条款</a></li>
+                        <li><a href="#">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 心灵伴侣. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 情绪选择功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const moodOptions = document.querySelectorAll('.mood-option');
+            const moodValueInput = document.getElementById('mood-value');
+            
+            moodOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 移除所有选项的选中状态
+                    moodOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // 添加当前选项的选中状态
+                    this.classList.add('selected');
+                    
+                    // 设置隐藏输入字段的值
+                    moodValueInput.value = this.dataset.mood;
+                });
+            });
+            
+            // 表单提交处理
+            const moodForm = document.getElementById('mood-form');
+            if (moodForm) {
+                moodForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // 获取表单数据
+                    const mood = moodValueInput.value;
+                    const description = document.getElementById('mood-description').value;
+                    const tags = document.getElementById('mood-tags').value;
+                    
+                    if (!mood) {
+                        alert('请选择您的情绪');
+                        return;
+                    }
+                    
+                    // 这里应该将数据发送到服务器
+                    console.log('提交情绪数据:', { mood, description, tags });
+                    alert('情绪记录已保存！');
+                    
+                    // 重置表单
+                    moodForm.reset();
+                    moodOptions.forEach(opt => opt.classList.remove('selected'));
+                });
+            }
+            
+            // 检查用户登录状态
+            checkUserStatus();
+        });
+        
+        // 检查用户状态并更新UI
+        function checkUserStatus() {
+            try {
+                const token = localStorage.getItem('token');
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                
+                const userInfo = document.getElementById('user-info');
+                const authButton = document.getElementById('auth-button');
+                const userName = document.getElementById('user-name');
+                const userButton = document.getElementById('user-button');
+                const profileNickname = document.getElementById('profile-nickname');
+                const profileGender = document.getElementById('profile-gender');
+                const profileZodiac = document.getElementById('profile-zodiac');
+                
+                if (token && user) {
+                    // 用户已登录
+                    if (userInfo) userInfo.style.display = 'block';
+                    if (authButton) authButton.style.display = 'none';
+                    if (userName) userName.textContent = user.username;
+                    
+                    // 设置用户按钮显示首字母
+                    if (userButton) {
+                        userButton.textContent = user.username.charAt(0).toUpperCase();
+                    }
+                    
+                    // 显示用户个人信息
+                    if (profileNickname) {
+                        profileNickname.textContent = userProfile.nickname || '';
+                    }
+                    
+                    if (profileGender) {
+                        const genderText = userProfile.gender === 'female' ? '女' : 
+                                         userProfile.gender === 'male' ? '男' : '';
+                        profileGender.textContent = genderText ? ` ${genderText}` : '';
+                    }
+                    
+                    if (profileZodiac) {
+                        profileZodiac.textContent = userProfile.zodiac ? ` ${userProfile.zodiac}` : '';
+                    }
+                } else {
+                    // 用户未登录
+                    if (userInfo) userInfo.style.display = 'none';
+                    if (authButton) authButton.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error checking user status:', error);
+            }
+        }
+        
+        // 绑定用户菜单事件
+        function bindUserMenuEvents() {
+            try {
+                const userButton = document.getElementById('user-button');
+                const userMenu = document.getElementById('user-menu');
+                const logoutBtn = document.getElementById('logout-btn');
+                const profileBtn = document.getElementById('profile-btn');
+                
+                if (userButton) {
+                    userButton.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (userMenu) {
+                            userMenu.classList.toggle('show');
+                        }
+                    });
+                }
+                
+                if (profileBtn) {
+                    profileBtn.addEventListener('click', function() {
+                        window.location.href = 'profile.html';
+                    });
+                }
+                
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function() {
+                        // 清除用户信息
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('userProfile');
+                        
+                        // 隐藏用户菜单
+                        if (userMenu) userMenu.classList.remove('show');
+                        
+                        // 隐藏用户信息按钮，显示登录按钮
+                        const userInfo = document.getElementById('user-info');
+                        const authButton = document.getElementById('auth-button');
+                        const userButton = document.getElementById('user-button');
+                        if (userInfo) userInfo.style.display = 'none';
+                        if (authButton) authButton.style.display = 'block';
+                        if (userButton) userButton.textContent = 'U'; // 重置为默认值
+                        
+                        alert('已成功登出');
+                    });
+                }
+                
+                // 点击页面其他地方隐藏菜单
+                document.addEventListener('click', function(e) {
+                    if (userMenu && !userMenu.contains(e.target) && userButton !== e.target) {
+                        userMenu.classList.remove('show');
+                    }
+                });
+            } catch (error) {
+                console.error('Error binding user menu events:', error);
+            }
+        }
+        
+        // 跳转到聊天功能
+        function goToChat() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    // 已登录用户跳转到首页的聊天界面
+                    window.location.href = 'index.html#chat';
+                } else {
+                    // 未登录用户显示登录模态框
+                    alert('请先登录');
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error('Error in goToChat:', error);
+            }
+        }
+    </script>
+</body>
+</html>
