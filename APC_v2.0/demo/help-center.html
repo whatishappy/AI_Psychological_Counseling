@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帮助中心 - 心灵伴侣</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 导航栏 */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6a67ce;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #6a67ce;
+        }
+
+        /* 功能下拉菜单 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 10px;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 0;
+        }
+
+        .dropdown-content a {
+            color: #555;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+            color: #6a67ce;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            color: #6a67ce;
+        }
+
+        .cta-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #5a57c5;
+        }
+
+        /* 用户信息按钮 */
+        .user-info {
+            display: none;
+            position: relative;
+        }
+
+        .user-button {
+            background: #6a67ce;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 200px;
+            display: none;
+            z-index: 1001;
+        }
+
+        .user-menu.show {
+            display: block;
+        }
+        
+        .user-menu p {
+            margin: 0 0 10px 0;
+            font-weight: 500;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .user-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 5px;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 5px;
+            transition: background 0.3s;
+        }
+        
+        .user-menu button:hover {
+            background: #e0e0e0;
+        }
+
+        /* 登录/注册按钮 */
+        .auth-button {
+            background: transparent;
+            color: #6a67ce;
+            border: 2px solid #6a67ce;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-left: 15px;
+        }
+
+        .auth-button:hover {
+            background: #f0f0ff;
+        }
+
+        /* 主要内容区域 */
+        .hero {
+            padding: 150px 0 80px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+
+        /* 帮助内容 */
+        .help-section {
+            padding: 50px 0 100px;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .help-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .help-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .help-card h3 {
+            color: #6a67ce;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .help-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .help-card ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .help-card li {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .help-card a {
+            color: #6a67ce;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-block;
+            transition: color 0.3s;
+        }
+
+        .help-card a:hover {
+            color: #5a57c5;
+            text-decoration: underline;
+        }
+
+        /* 底部 */
+        footer {
+            background: #333;
+            color: white;
+            padding: 50px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 20px;
+            color: #6a67ce;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: #6a67ce;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #aaa;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">心灵伴侣</div>
+                <ul class="nav-links">
+                    <li><a href="index.html">首页</a></li>
+                </ul>
+                <div class="dropdown">
+                    <a class="dropbtn">功能</a>
+                    <div class="dropdown-content">
+                        <a href="ai-counselor.html">AI心理咨询师</a>
+                        <a href="emotion-tracking.html">情绪追踪</a>
+                        <a href="cognitive-restructuring.html">认知重构</a>
+                        <a href="meditation.html">冥想练习</a>
+                        <a href="psychological-tests.html">心理测试</a>
+                        <a href="knowledge-base.html">知识库</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <section class="hero">
+        <div class="container">
+            <h1>帮助中心</h1>
+            <p>在这里您可以找到使用心灵伴侣AI心理咨询服务的常见问题和解决方案</p>
+        </div>
+    </section>
+
+    <section class="help-section">
+        <div class="container">
+            <div class="help-grid">
+                <div class="help-card">
+                    <h3>账号与登录</h3>
+                    <p>关于账号注册、登录和密码重置的问题</p>
+                    <ul>
+                        <li>如何注册新账号</li>
+                        <li>忘记密码怎么办</li>
+                        <li>如何修改个人信息</li>
+                        <li>账号安全设置</li>
+                    </ul>
+                    <a href="#">查看更多 →</a>
+                </div>
+                
+                <div class="help-card">
+                    <h3>AI心理咨询</h3>
+                    <p>关于AI心理咨询服务的使用说明</p>
+                    <ul>
+                        <li>如何开始一次咨询</li>
+                        <li>AI咨询的隐私保护</li>
+                        <li>咨询记录查看</li>
+                        <li>咨询效果评估</li>
+                    </ul>
+                    <a href="#">查看更多 →</a>
+                </div>
+                
+                <div class="help-card">
+                    <h3>功能使用</h3>
+                    <p>各项功能模块的详细使用指南</p>
+                    <ul>
+                        <li>情绪追踪功能</li>
+                        <li>认知重构工具</li>
+                        <li>冥想练习指导</li>
+                        <li>心理测试解读</li>
+                    </ul>
+                    <a href="#">查看更多 →</a>
+                </div>
+                
+                <div class="help-card">
+                    <h3>隐私与安全</h3>
+                    <p>数据保护和隐私安全相关问题</p>
+                    <ul>
+                        <li>数据加密措施</li>
+                        <li>隐私政策说明</li>
+                        <li>个人信息管理</li>
+                        <li>数据删除请求</li>
+                    </ul>
+                    <a href="#">查看更多 →</a>
+                </div>
+                
+                <div class="help-card">
+                    <h3>技术支持</h3>
+                    <p>技术问题和故障排除</p>
+                    <ul>
+                        <li>浏览器兼容性</li>
+                        <li>页面加载缓慢</li>
+                        <li>功能异常处理</li>
+                        <li>设备适配问题</li>
+                    </ul>
+                    <a href="#">查看更多 →</a>
+                </div>
+                
+                <div class="help-card">
+                    <h3>联系我们</h3>
+                    <p>获取更多帮助和支持</p>
+                    <p>如果您在帮助中心找不到答案，可以通过以下方式联系我们：</p>
+                    <ul>
+                        <li>客服邮箱：support@xinlingbanlv.com</li>
+                        <li>客服电话：400-123-4567</li>
+                        <li>在线客服：工作日 9:00-18:00</li>
+                    </ul>
+                    <a href="#">提交工单 →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 底部 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>心灵伴侣</h3>
+                    <p>您的专属AI心理咨询师，24小时在线陪伴，保护隐私，专业支持。</p>
+                </div>
+                <div class="footer-column">
+                    <h3>功能</h3>
+                    <ul>
+                        <li><a href="ai-counselor.html">AI心理聊天</a></li>
+                        <li><a href="emotion-tracking.html">情绪追踪</a></li>
+                        <li><a href="cognitive-restructuring.html">认知重构</a></li>
+                        <li><a href="meditation.html">冥想练习</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>资源</h3>
+                    <ul>
+                        <li><a href="psychological-tests.html">心理测试</a></li>
+                        <li><a href="knowledge-base.html">知识库</a></li>
+                        <li><a href="help-center.html">帮助中心</a></li>
+                        <li><a href="terms.html">隐私政策</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>支持</h3>
+                    <ul>
+                        <li><a href="#">服务条款</a></li>
+                        <li><a href="#">联系我们</a></li>
+                        <li><a href="#">用户指南</a></li>
+                        <li><a href="#">常见问题</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 心灵伴侣. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
