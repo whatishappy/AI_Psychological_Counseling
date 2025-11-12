@@ -53,52 +53,83 @@
         }
 
         .nav-links li {
-            margin-left: 30px;
+            margin-left: 15px;
         }
 
         .nav-links a {
-            text-decoration: none;
-            color: #555;
+            background: #6a67ce;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-weight: 500;
-            transition: color 0.3s;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(106, 103, 206, 0.2);
         }
 
         .nav-links a:hover {
-            color: #6a67ce;
+            background: #5a57c5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(106, 103, 206, 0.4);
         }
 
-        /* 功能下拉菜单 */
         .dropdown {
             position: relative;
             display: inline-block;
         }
 
+        /* 为功能菜单添加更鲜亮显眼的样式 */
+        .dropdown .dropbtn {
+            background: linear-gradient(45deg, #ff6b6b, #ffa502);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(255, 107, 107, 0.3);
+            border: none;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        .dropdown .dropbtn:hover {
+            background: linear-gradient(45deg, #ff5252, #ff9f1a);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
+        }
+
         .dropdown-content {
             display: none;
             position: absolute;
-            background-color: #f9f9f9;
-            min-width: 200px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            background-color: #ffffff;
+            min-width: 220px;
+            box-shadow: 0px 8px 20px 0px rgba(0,0,0,0.2);
             z-index: 1;
             border-radius: 10px;
             top: 100%;
             left: 50%;
             transform: translateX(-50%);
             padding: 10px 0;
+            border: 1px solid #eee;
         }
 
         .dropdown-content a {
             color: #555;
-            padding: 12px 16px;
+            padding: 12px 20px;
             text-decoration: none;
             display: block;
             text-align: left;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
         }
 
         .dropdown-content a:hover {
-            background-color: #f1f1f1;
-            color: #6a67ce;
+            background-color: #f8f9fa;
+            color: #ff6b6b;
+            border-left: 3px solid #ff6b6b;
         }
 
         .dropdown:hover .dropdown-content {
@@ -106,7 +137,7 @@
         }
 
         .dropdown:hover .dropbtn {
-            color: #6a67ce;
+            color: white;
         }
 
         .cta-button {
@@ -260,7 +291,27 @@
         .btn-secondary:hover {
             background: #f0f0ff;
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(106, 103, 206, 0.1);
+            box-shadow: 0 10px 20px rgba(106, 103, 206, 0.2);
+        }
+
+        /* 添加secondary-button样式 */
+        .secondary-button {
+            background: transparent;
+            color: #6a67ce;
+            border: 2px solid #6a67ce;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .secondary-button:hover {
+            background: #f0f0ff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(106, 103, 206, 0.2);
         }
 
         /* 功能区域 */
@@ -768,6 +819,7 @@
                 <div class="dropdown">
                     <a class="dropbtn">功能</a>
                     <div class="dropdown-content">
+                        <a href="ai-counselor.html">AI心理咨询师</a>
                         <a href="emotion-tracking.html">情绪追踪</a>
                         <a href="cognitive-restructuring.html">认知重构</a>
                         <a href="meditation.html">冥想练习</a>
@@ -787,8 +839,7 @@
             <h1>您的专属AI心理咨询师<br>随时倾听，始终陪伴</h1>
             <p>基于认知行为疗法(CBT)的专业心理支持，24小时在线，保护隐私，帮助您缓解压力、焦虑和抑郁情绪。</p>
             <div class="hero-buttons">
-                <button class="cta-button" onclick="goToChat()">开始聊天</button>
-                <button class="secondary-button" onclick="scrollToChat()">免费试用</button>
+                <a href="ai-counselor.html" class="cta-button">开始咨询</a>
                 <button class="secondary-button" onclick="showAuthModal()">了解更多</button>
             </div>
         </div>
@@ -833,22 +884,33 @@
         </div>
     </section>
 
-    <!-- 聊天界面 -->
+    <!-- AI心理咨询介绍 -->
     <section class="chat-demo" id="chat">
         <div class="container">
-            <h2 class="section-title">体验AI心理咨询</h2>
+            <h2 class="section-title">AI心理咨询</h2>
             <div class="chat-container">
                 <div class="chat-header">
-                    <h3>AI心理咨询师</h3>
+                    <h3>专业AI心理支持</h3>
                 </div>
-                <div class="chat-messages" id="chat-messages">
+                <div class="chat-messages">
                     <div class="message ai-message">
-                        您好！我是您的AI心理咨询师。今天过得怎么样？有什么我可以帮助您的吗？
+                        欢迎了解我们的AI心理咨询服务。我们提供基于认知行为疗法(CBT)的专业心理支持，24小时在线，保护隐私。
+                    </div>
+                    <div class="message ai-message">
+                        我们的AI心理咨询师能够帮助您：
+                        <ul>
+                            <li>缓解压力、焦虑和抑郁情绪</li>
+                            <li>识别并改变负面思维模式</li>
+                            <li>提供个性化的心理健康建议</li>
+                            <li>陪伴您度过困难时刻</li>
+                        </ul>
+                    </div>
+                    <div class="message ai-message">
+                        点击下方按钮开始您的心理健康之旅，或者登录后享受更个性化的服务。
                     </div>
                 </div>
-                <div class="chat-input">
-                    <input type="text" id="chat-input" placeholder="输入您的问题或感受..." />
-                    <button id="send-button">发送</button>
+                <div class="chat-input-container">
+                    <a href="ai-counselor.html" class="cta-button" style="width: 100%; text-align: center; text-decoration: none; padding: 15px;">开始咨询</a>
                 </div>
             </div>
         </div>
@@ -886,29 +948,28 @@
                 <div class="footer-column">
                     <h3>功能</h3>
                     <ul>
-                        <li><a href="#">AI心理聊天</a></li>
-                        <li><a href="#">情绪追踪</a></li>
-                        <li><a href="#">认知重构</a></li>
-                        <li><a href="#">冥想练习</a></li>
+                        <li><a href="ai-counselor.html">AI心理聊天</a></li>
+                        <li><a href="emotion-tracking.html">情绪追踪</a></li>
+                        <li><a href="cognitive-restructuring.html">认知重构</a></li>
+                        <li><a href="meditation.html">冥想练习</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
                     <h3>资源</h3>
                     <ul>
-                        <li><a href="#">心理测试</a></li>
-                        <li><a href="#">知识库</a></li>
-                        <li><a href="#">情绪追踪</a></li>
-                        <li><a href="#">心理测试</a></li>
-                        <li><a href="#">冥想练习</a></li>
+                        <li><a href="psychological-tests.html">心理测试</a></li>
+                        <li><a href="knowledge-base.html">知识库</a></li>
+                        <li><a href="help-center.html">帮助中心</a></li>
+                        <li><a href="terms.html">隐私政策</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
                     <h3>支持</h3>
                     <ul>
-                        <li><a href="#">帮助中心</a></li>
-                        <li><a href="#">隐私政策</a></li>
-                        <li><a href="#">服务条款</a></li>
-                        <li><a href="#">联系我们</a></li>
+                        <li><a href="terms-of-service.html">服务条款</a></li>
+                        <li><a href="contact-us.html">联系我们</a></li>
+                        <li><a href="help-center.html">用户指南</a></li>
+                        <li><a href="help-center.html">常见问题</a></li>
                     </ul>
                 </div>
             </div>
