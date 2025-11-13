@@ -16,8 +16,8 @@ export class User extends Model<UserAttributes> implements UserAttributes {
   public agreed_to_terms?: boolean;
 
   // 时间戳
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  public createdAt!: Date;
+  public updatedAt!: Date;
 }
 
 User.init({
@@ -71,5 +71,30 @@ User.init({
   sequelize,
   modelName: 'User',
   tableName: 'users',
-  timestamps: true // 启用时间戳
+  timestamps: true, // 启用时间戳
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  // 为时间戳字段设置合法的默认值，避免出现0000-00-00 00:00:00错误
+  hooks: {
+    beforeCreate: (user) => {
+      const now = new Date();
+      if (!user.createdAt) {
+        user.createdAt = now;
+      }
+      if (!user.updatedAt) {
+        user.updatedAt = now;
+      }
+    },
+    beforeBulkCreate: (users) => {
+      const now = new Date();
+      for (const user of users) {
+        if (!user.createdAt) {
+          user.createdAt = now;
+        }
+        if (!user.updatedAt) {
+          user.updatedAt = now;
+        }
+      }
+    }
+  }
 });

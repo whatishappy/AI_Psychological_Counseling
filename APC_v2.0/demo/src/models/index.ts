@@ -26,12 +26,18 @@ export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
   dialect: 'mysql',
   logging: console.log, // 启用SQL日志以便调试
   dialectOptions: {
-    multipleStatements: true
+    multipleStatements: true,
+    // 添加对零日期的兼容性设置
+    dateStrings: true,
+    timezone: '+08:00'
   },
   define: {
     charset: 'utf8mb4',
-    collate: 'utf8mb4_general_ci'
-  }
+    collate: 'utf8mb4_general_ci',
+    // 为时间戳字段设置默认值
+    timestamps: true
+  },
+  timezone: '+08:00' // 设置时区
 });
 
 // 导入 User 模型

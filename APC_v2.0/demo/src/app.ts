@@ -120,10 +120,10 @@ app.post('/api/auth/register', async (req, res) => {
         const user = await User.create({
             username,
             password_hash,
-            email,
-            nickname,
-            gender,
-            birth_date,
+            email: email || null,
+            nickname: nickname || null,
+            gender: gender || null,
+            birth_date: birth_date || null,
             user_type: 'registered'
         });
         
